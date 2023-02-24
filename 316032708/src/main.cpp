@@ -19,42 +19,7 @@ double sphere_function(double x[], int size) {
     return sum;
 }
 
-//  d) Tenth Power Function
-double tenth_power_function(double x[], int size) {
-    double sum = 0;
-    for (int i = 0; i < size; i++) {
-        sum +=  pow(x[i],10);
-    }
-    cout << "Result: " << sum << endl;
-
-    return sum;
-}
-
-// # e) Rastring
-double rastrigin_funtion(double vector[], int size){
-
-    //Using M_E = e and M_PI=pi
-
-    // This is the sum which has a square root 
-    double first_sum = 10*size; 
-    // This is the sum which has a cos 
-    double second_sum = 0.0; 
-
-    //First sum 
-    for (int i=0; i < size; i++){
-        first_sum += vector[i]*vector[i] - 10*(cos(2*M_PI*vector[i])); 
-    }
-    
-    //Final return
-    double result = first_sum+second_sum;  
-    
-    cout << result << endl;
-
-    return  result; 
-     
-}
-
-// # b) Ackley
+//  b) Ackley
 double ackley_funtion(double vector[], int size){
 
     //Using M_E = e and M_PI=pi
@@ -90,6 +55,43 @@ double ackley_funtion(double vector[], int size){
     return  result; 
      
 }
+
+//  d) Tenth Power 
+double tenth_power_function(double x[], int size) {
+    double sum = 0;
+    for (int i = 0; i < size; i++) {
+        sum +=  pow(x[i],10);
+    }
+    cout << "Result: " << sum << endl;
+
+    return sum;
+}
+
+//  e) Rastring
+double rastrigin_funtion(double vector[], int size){
+
+    //Using M_E = e and M_PI=pi
+
+    // This is the sum which has a square root 
+    double first_sum = 10*size; 
+    // This is the sum which has a cos 
+    double second_sum = 0.0; 
+
+    //First sum 
+    for (int i=0; i < size; i++){
+        first_sum += vector[i]*vector[i] - 10*(cos(2*M_PI*vector[i])); 
+    }
+    
+    //Final return
+    double result = first_sum+second_sum;  
+    
+    cout << result << endl;
+
+    return  result; 
+     
+}
+
+
 
 int main()
 {
