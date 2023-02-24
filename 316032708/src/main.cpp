@@ -14,12 +14,10 @@ double sphere_function(double x[], int size) {
         
     }
 
-    cout << "Result: " << sum << endl;
-
     return sum;
 }
 
-//  b) Ackley
+// # b) Ackley
 double ackley_funtion(double vector[], int size){
 
     //Using M_E = e and M_PI=pi
@@ -52,22 +50,35 @@ double ackley_funtion(double vector[], int size){
     
     cout << result << endl;
 
-    return  result; 
+    return result; 
      
 }
 
-//  d) Tenth Power 
+// # c) Grienwank
+double griewank_funtion(double X[], int dimention){
+
+    double sum = 0;
+    double prod = 1;
+
+    for (int i=0; i < dimention; i++){
+        sum += (pow(X[i], 2)/4000);
+        prod *= cos(double(X[i])) / sqrt(i+1);
+    }
+
+    return 1 + sum - prod;
+}
+
+//  d) Tenth Power Function
 double tenth_power_function(double x[], int size) {
     double sum = 0;
     for (int i = 0; i < size; i++) {
         sum +=  pow(x[i],10);
     }
-    cout << "Result: " << sum << endl;
 
     return sum;
 }
 
-//  e) Rastring
+// # e) Rastring
 double rastrigin_funtion(double vector[], int size){
 
     //Using M_E = e and M_PI=pi
@@ -84,10 +95,8 @@ double rastrigin_funtion(double vector[], int size){
     
     //Final return
     double result = first_sum+second_sum;  
-    
-    cout << result << endl;
 
-    return  result; 
+    return result; 
      
 }
 
@@ -98,8 +107,11 @@ int main()
     int vector[5] = {1,2,3,4}; 
     double vector_d[5] = {-3.2,-1.5,0.9,1.3,4.1}; 
     
-    //print_array(vector,4); 
-    rastrigin_funtion(vector_d, 5); 
-    sphere_function(vector_d, 5 );
+    cout << "Sphere: " << sphere_function(vector_d, 5) << endl;
+    cout << "Ackley: " << ackley_funtion(vector_d, 5) << endl;
+    cout << "Griewank: " << griewank_funtion(vector_d, 5) << endl;
+    cout << "Tenth Power: " << tenth_power_function(vector_d, 5) << endl;
+    cout << "Rastrigin " << rastrigin_funtion(vector_d, 5) << endl; 
+
 
 }
