@@ -2,6 +2,8 @@
 #include <math.h>
 #include <string>
 #include <cmath>
+#include <bitset>
+#include <iomanip>
 
 #define _USE_MATH_DEFINES // for C++
 #define BIT_PRECISION 64
@@ -159,6 +161,9 @@ double binaryToDouble(bitset<BIT_PRECISION> schema, double max){
 
 int main()
 {
+    std::cout << std::fixed;
+    std::cout << std::setprecision(14);
+
     int vector[5] = {1,2,3,4}; 
     double vector_d[5] = {-3.2,-1.5,0.9,1.3,4.1}; 
     
@@ -169,10 +174,10 @@ int main()
     cout << "Rastrigin: " << rastrigin_funtion(vector_d, 5) << endl; 
     cout << "Rosenbrock: " << rosenbrock_function(vector_d, 5) << endl; 
     //Convierte -3.2 a binario en el rango de [-5.2, 5.2]
-   bitset<BIT_PRECISION> binary = doubleToBinary(-2.59, 5.12); 
-   cout << binary << endl;  
-   cout << binaryToDouble(binary, 5.12) << endl; 
+    double interval = 2<<15;
+    bitset<BIT_PRECISION> binary = doubleToBinary(-0.01, interval); 
+    cout << binary << endl;  
+    cout << binaryToDouble(binary, interval) << endl; 
 
 }
-
 
