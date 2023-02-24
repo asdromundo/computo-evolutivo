@@ -48,8 +48,6 @@ double ackley_funtion(double vector[], int size){
 
     //Final return
     double result = 20+M_E-first_sum-second_sum;  
-    
-    cout << result << endl;
 
     return result; 
      
@@ -101,6 +99,14 @@ double rastrigin_funtion(double vector[], int size){
      
 }
 
+// # f) Rosenbrock Function
+double rosenbrock_function(double X[], int dimention){
+    double sum;
+    for (int i = 1; i < dimention-1; i++){
+        sum += (100 * (X[i+1]-pow(X[i], 2))) + pow(1-X[i], 2);
+    }
+    return sum;
+}
 
 //ESQUEMA DE CODIFICACION 
 
@@ -111,6 +117,16 @@ en este caso nuestro intervalos son simetricos, por lo que sólo consideramos un
 double getPrecision(int size, double max){
     //Vamos a considerar 
     return max/(pow(2,size-1)-1); 
+
+}
+
+//Nuestro esquema es de 16 
+bitset<16> doubleToBits(double num, double max){
+
+    int halfRepresentation = round(num/getPrecision(16,max)); 
+    bitset<16> schema(halfRepresentation);
+
+    return schema; 
 
 }
 
@@ -147,8 +163,8 @@ int main()
     cout << "Ackley: " << ackley_funtion(vector_d, 5) << endl;
     cout << "Griewank: " << griewank_funtion(vector_d, 5) << endl;
     cout << "Tenth Power: " << tenth_power_function(vector_d, 5) << endl;
-    cout << "Rastrigin " << rastrigin_funtion(vector_d, 5) << endl; 
-    
+    cout << "Rastrigin: " << rastrigin_funtion(vector_d, 5) << endl; 
+    cout << "Rosenbrock: " << rosenbrock_function(vector_d, 5) << endl; 
     //Convierte -3.2 a binario en el rango de [-5.2, 5.2]
    bitset<16> binary = doubleToBits(3.2, 5.12); 
 
@@ -157,3 +173,5 @@ int main()
    cout << binaryToDouble(binary, 5.12) << endl; 
 
 }
+
+
