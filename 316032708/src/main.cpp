@@ -54,7 +54,42 @@ double rastrigin_funtion(double vector[], int size){
      
 }
 
+// # b) Ackley
+double ackley_funtion(double vector[], int size){
 
+    //Using M_E = e and M_PI=pi
+
+    // This is the sum which has a square root 
+    double first_sum = 0.0; 
+    // This is the sum which has a cos 
+    double second_sum = 0.0; 
+
+    //First sum 
+    for (int i=0; i < size; i++){
+        first_sum += vector[i]*vector[i]; 
+    }
+    first_sum = first_sum/size;
+    first_sum = sqrt(first_sum);
+    first_sum = first_sum * (-0.2);
+    first_sum = exp(first_sum); 
+    first_sum = first_sum*20;  
+
+    //Second Sum 
+    for (int i=0; i < size; i++){
+
+        second_sum += cos(2*M_PI*vector[i]); 
+    }
+    second_sum = second_sum/size; 
+    second_sum = exp(second_sum);
+
+    //Final return
+    double result = 20+M_E-first_sum-second_sum;  
+    
+    cout << result << endl;
+
+    return  result; 
+     
+}
 
 int main()
 {
