@@ -1,8 +1,10 @@
 #include <iostream>
 #include <math.h>
 #include <string>
-#define _USE_MATH_DEFINES // for C++
 #include <cmath>
+
+#define _USE_MATH_DEFINES // for C++
+#define BIT_PRECISION 32
                                                              
                      
 using namespace std;
@@ -116,39 +118,41 @@ en este caso nuestro intervalos son simetricos, por lo que sólo consideramos un
 */
 double getPrecision(int size, double max){
     //Vamos a considerar 
+    // cout << max/(pow(2,size-1)-1) << endl; 
     return max/(pow(2,size-1)-1); 
 
 }
 
-//Nuestro esquema es de 16 
-bitset<16> doubleToBits(double num, double max){
-
-    int halfRepresentation = round(num/getPrecision(16,max)); 
-    bitset<16> schema(halfRepresentation);
-
-    return schema; 
-
-}
-
 //CODIFICACION 
-bitset<16> doubleToBinary(double num, double max){
+bitset<BIT_PRECISION> doubleToBinary(double num, double max){
 
-    int halfRepresentation = round(num/getPrecision(16,max)); 
-    bitset<16> schema(halfRepresentation);
+    bool negative = false;
+    if (num < 0){
+        negative = true;
+        num *= -1;
+    }
+    int halfRepresentation = round(num/getPrecision(BIT_PRECISION,max)); 
 
+    bitset<BIT_PRECISION> schema(halfRepresentation);
+    if (negative)
+        schema[BIT_PRECISION - 1] = 1;
     return schema; 
 
 }
 
 //DECODIFICACION 
-double binaryToDouble(bitset<16> schema, double max){
+double binaryToDouble(bitset<BIT_PRECISION> schema, double max){
 
     string var  = schema.to_string(); 
-    //Falta generar bitset de 15  
-
-    int halfRepresentation = schema.to_ulong(); 
-    double precision = getPrecision(16,max); 
-
+    bool negative = false;
+    if (schema[BIT_PRECISION - 1]){
+        schema[BIT_PRECISION - 1] = 0;
+        negative = true;
+    }
+    int halfRepresentation = (schema).to_ulong(); 
+    double precision = getPrecision(BIT_PRECISION,max); 
+    if (negative)
+        halfRepresentation *= -1;
     return halfRepresentation*precision; 
 }
 
@@ -166,10 +170,8 @@ int main()
     cout << "Rastrigin: " << rastrigin_funtion(vector_d, 5) << endl; 
     cout << "Rosenbrock: " << rosenbrock_function(vector_d, 5) << endl; 
     //Convierte -3.2 a binario en el rango de [-5.2, 5.2]
-   bitset<16> binary = doubleToBits(3.2, 5.12); 
-
+   bitset<BIT_PRECISION> binary = doubleToBinary(-2.6, 5.12); 
    cout << binary << endl;  
-
    cout << binaryToDouble(binary, 5.12) << endl; 
 
 }
