@@ -2,7 +2,34 @@
 #include <math.h>
 #define _USE_MATH_DEFINES // for C++
 #include <cmath>
+#include <vector>                                                               
+#include <cmath>                                                                
+                     
 using namespace std;
+
+
+double sphere_function(vector<double> x) {
+    double sum = 0;
+    for (int i = 0; i < x.size(); i++) {
+            sum += x[i] * x[i];
+        
+    }
+
+    cout << "Result: " << sum << endl;
+
+    return sum;
+}
+
+
+double tenth_power_function(vector<double> x) {
+    double sum = 0;
+    for (int i = 0; i < x.size(); i++) {
+        sum +=  pow(x[i],10);
+    }
+    cout << "Result: " << sum << endl;
+
+    return sum;
+}
   
 double rastrigin_funtion(double vector[], int size){
 
@@ -33,7 +60,7 @@ int main()
 {
     int vector[5] = {1,2,3,4}; 
     double vector_d[5] = {-3.2,-1.5,0.9,1.3,4.1}; 
-
+    
     //print_array(vector,4); 
     rastrigin_funtion(vector_d, 5); 
 
