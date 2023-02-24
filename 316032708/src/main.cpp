@@ -101,6 +101,31 @@ double rastrigin_funtion(double vector[], int size){
 }
 
 
+//ESQUEMA DE CODIFICACION 
+
+/*
+Funcion para obtener la precision dado el tamanio (numero de bits para el esquema) y el max,
+en este caso nuestro intervalos son simetricos, por lo que sólo consideramos uno de ellos 
+*/
+double getPrecision(int size, double max){
+    //Vamos a considerar 
+    return max/(pow(2,size-1)-1); 
+
+}
+
+//Nuestro esquema es de 16 
+bitset<16> doubleToBits(double num, double max){
+
+    int halfRepresentation = round(num/getPrecision(16,max)); 
+    bitset<16> schema(halfRepresentation);
+
+    return schema; 
+
+}
+
+
+
+
 
 int main()
 {
@@ -112,6 +137,8 @@ int main()
     cout << "Griewank: " << griewank_funtion(vector_d, 5) << endl;
     cout << "Tenth Power: " << tenth_power_function(vector_d, 5) << endl;
     cout << "Rastrigin " << rastrigin_funtion(vector_d, 5) << endl; 
-
+    
+    //Convierte -3.2 a binario en el rango de [-5.2, 5.2]
+    cout << doubleToBits(-3.2, 5.12) << endl;  
 
 }
