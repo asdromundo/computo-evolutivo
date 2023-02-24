@@ -1,5 +1,6 @@
 #include <iostream>
 #include <math.h>
+#include <string>
 #define _USE_MATH_DEFINES // for C++
 #include <cmath>
                                                              
@@ -113,8 +114,8 @@ double getPrecision(int size, double max){
 
 }
 
-//Nuestro esquema es de 16 
-bitset<16> doubleToBits(double num, double max){
+//CODIFICACION 
+bitset<16> doubleToBinary(double num, double max){
 
     int halfRepresentation = round(num/getPrecision(16,max)); 
     bitset<16> schema(halfRepresentation);
@@ -123,7 +124,17 @@ bitset<16> doubleToBits(double num, double max){
 
 }
 
+//DECODIFICACION 
+double binaryToDouble(bitset<16> schema, double max){
 
+    string var  = schema.to_string(); 
+    //Falta generar bitset de 15  
+
+    int halfRepresentation = schema.to_ulong(); 
+    double precision = getPrecision(16,max); 
+
+    return halfRepresentation*precision; 
+}
 
 
 
@@ -139,6 +150,10 @@ int main()
     cout << "Rastrigin " << rastrigin_funtion(vector_d, 5) << endl; 
     
     //Convierte -3.2 a binario en el rango de [-5.2, 5.2]
-    cout << doubleToBits(-3.2, 5.12) << endl;  
+   bitset<16> binary = doubleToBits(3.2, 5.12); 
+
+   cout << binary << endl;  
+
+   cout << binaryToDouble(binary, 5.12) << endl; 
 
 }
