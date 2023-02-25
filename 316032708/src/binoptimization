@@ -1,0 +1,108 @@
+#ifndef CC_COMPUTO_EVOLUTIVO_BINARY_OPTIMIZATION
+#define CC_COMPUTO_EVOLUTIVO_BINARY_OPTIMIZATION
+
+#include "binary"
+
+//  a) Sphere
+double sphere(binary X, int size) {
+    double sum = 0;
+    for (int i = 0; i < size; i++) {
+            sum += X.values[i] * X.values[i];
+        
+    }
+
+    return sum;
+}
+
+// # b) Ackley
+double ackley(binary X, int size){
+
+    //Using M_E = e and M_PI=pi
+
+    // This is the sum which has a square root 
+    double first_sum = 0.0; 
+    // This is the sum which has a cos 
+    double second_sum = 0.0; 
+
+    //First sum 
+    for (int i=0; i < size; i++){
+        first_sum += X.values[i]*X.values[i]; 
+    }
+    first_sum = first_sum/size;
+    first_sum = sqrt(first_sum);
+    first_sum = first_sum * (-0.2);
+    first_sum = exp(first_sum); 
+    first_sum = first_sum*20;  
+
+    //Second Sum 
+    for (int i=0; i < size; i++){
+
+        second_sum += cos(2*M_PI*X.values[i]); 
+    }
+    second_sum = second_sum/size; 
+    second_sum = exp(second_sum);
+
+    //Final return
+    double result = 20+M_E-first_sum-second_sum;  
+
+    return result; 
+     
+}
+
+// # c) Grienwank
+double griewank(binary X, int dimention){
+
+    double sum = 0;
+    double prod = 1;
+
+    for (int i=0; i < dimention; i++){
+        sum += ((X.values[i] * X.values[i])/4000);
+        prod *= cos(double(X.values[i])) / sqrt(i+1);
+    }
+
+    return 1 + sum - prod;
+}
+
+//  d) Tenth Power Function
+double tenth_power(binary X, int size) {
+    double sum = 0;
+    for (int i = 0; i < size; i++) {
+        sum +=  pow((char)X.values[i],10);
+    }
+
+    return sum;
+}
+
+// # e) Rastring
+double rastrigin(binary X, int size){
+
+    //Using M_E = e and M_PI=pi
+
+    // This is the sum which has a square root 
+    double first_sum = 10*size; 
+    // This is the sum which has a cos 
+    double second_sum = 0.0; 
+
+    //First sum 
+    for (int i=0; i < size; i++){
+        first_sum += X.values[i]*X.values[i] - 10*(cos(2*M_PI*X.values[i])); 
+    }
+    
+    //Final return
+    double result = first_sum+second_sum;  
+
+    return result; 
+     
+}
+
+// # f) Rosenbrock Function
+double rosenbrock(binary X, int dimention){
+    double sum;
+    for (int i = 1; i < dimention-1; i++){
+        sum += (100 * (X.values[i+1]-pow((char)X.values[i], 2))) + pow(1-X.values[i], 2);
+    }
+    return sum;
+}
+
+
+#endif

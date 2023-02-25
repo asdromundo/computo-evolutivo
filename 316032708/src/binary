@@ -1,0 +1,66 @@
+#ifndef CC_COMPUTO_EVOLUTIVO_BINARY
+#define CC_COMPUTO_EVOLUTIVO_BINARY
+
+#include <math.h>
+#include <iostream>
+#include <bitset>
+#define BIT_PRECISION 32
+
+struct binary {
+    std::bitset<BIT_PRECISION> values;
+    int length;
+};
+
+// Para imprimir el binary
+std::ostream &operator<<(std::ostream &os, const binary &array)
+{
+    return os<<array.values;
+}
+
+//ESQUEMA DE CODIFICACION 
+
+/*
+Funcion para obtener la precision dado el tamanio (numero de bits para el esquema) y el max,
+en este caso nuestro intervalos son simetricos, por lo que sólo consideramos uno de ellos 
+*/
+double getPrecision(int size, double max){
+    //Vamos a considerar 
+    return max/(pow(2,size-1)-1); 
+    
+}
+
+//CODIFICACION 
+binary doubleToBinary(double num, double max){
+
+    bool negative = false;
+    if (num < 0){
+        negative = true;
+        num *= -1;
+    }
+    long intermediateRepresentation = round(num/getPrecision(BIT_PRECISION,max)); 
+
+    binary array;
+    std::bitset<BIT_PRECISION> encoded_num(intermediateRepresentation);
+    if (negative)
+        encoded_num[BIT_PRECISION - 1] = 1;
+    array.values = encoded_num;
+    array.length = BIT_PRECISION;
+    return array; 
+
+}
+
+//DECODIFICACION 
+double binaryToDouble(binary encoded_num, double max){
+
+    bool negative = false;
+    if (encoded_num.values[BIT_PRECISION - 1]){
+        encoded_num.values[BIT_PRECISION - 1] = 0;
+        negative = true;
+    }
+    long halfRepresentation = encoded_num.values.to_ulong(); 
+    double precision = getPrecision(BIT_PRECISION,max); 
+    if (negative)
+        halfRepresentation *= -1;
+    return halfRepresentation*precision; 
+}
+#endif
