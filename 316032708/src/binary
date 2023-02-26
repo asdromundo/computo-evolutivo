@@ -3,12 +3,14 @@
 
 #include <math.h>
 #include <iostream>
-#include <bitset>
-#define BIT_PRECISION 32
+#include "lib/dynamic_bitset/dynamic_bitset.hpp"
+#define BINARY_LENGTH 32 // Default length, MUST comply with 0 < BINARY_LENGTH <= MAX_BINARY_LENGTH
+#define MAX_BINARY_LENGTH 64 // Limited by our implementation, do NOT change
 
 struct binary {
-    std::bitset<BIT_PRECISION> values;
-    int length;
+    boost::dynamic_bitset<> values;
+    uint8_t length = 0;     // the bitset length
+    double MAX = 0.0;         // maximum representable value
 };
 
 // Para imprimir el binary
@@ -20,7 +22,7 @@ std::ostream &operator<<(std::ostream &os, const binary &array)
 //ESQUEMA DE CODIFICACION 
 
 /*
-Funcion para obtener la precision dado el tamanio (numero de bits para el esquema) y el max,
+Funcion para obtener la longitud dado el tamaño (numero de bits para el esquema) y el max,
 en este caso nuestro intervalos son simetricos, por lo que sólo consideramos uno de ellos 
 */
 double getPrecision(int size, double max){
@@ -30,22 +32,25 @@ double getPrecision(int size, double max){
 }
 
 //CODIFICACION 
-binary doubleToBinary(double num, double max){
-
+binary double_to_binary(double num, double max, uint bit_length=BINARY_LENGTH){
+    int control = 0;
     bool negative = false;
     if (num < 0){
         negative = true;
         num *= -1;
     }
-    long intermediateRepresentation = round(num/getPrecision(BIT_PRECISION,max)); 
+    long intermediateRepresentation = round(num/getPrecision(BINARY_LENGTH,max)); 
 
-    binary array;
-    std::bitset<BIT_PRECISION> encoded_num(intermediateRepresentation);
+    binary new_binary;
+    boost::dynamic_bitset<> encoded_num(intermediateRepresentation);
     if (negative)
-        encoded_num[BIT_PRECISION - 1] = 1;
-    array.values = encoded_num;
-    array.length = BIT_PRECISION;
-    return array; 
+        encoded_num[BINARY_LENGTH - 1] = 1; // The most significat digit is the last one in bitset
+    
+    new_binary.values = encoded_num;
+    new_binary.length = BINARY_LENGTH;
+    new_binary.MAX = max;
+
+    return new_binary; 
 
 }
 
@@ -53,14 +58,49 @@ binary doubleToBinary(double num, double max){
 double binaryToDouble(binary encoded_num, double max){
 
     bool negative = false;
-    if (encoded_num.values[BIT_PRECISION - 1]){
-        encoded_num.values[BIT_PRECISION - 1] = 0;
+    if (encoded_num.values[BINARY_LENGTH - 1]){
+        encoded_num.values[BINARY_LENGTH - 1] = 0;
         negative = true;
     }
     long halfRepresentation = encoded_num.values.to_ulong(); 
-    double precision = getPrecision(BIT_PRECISION,max); 
+    double length = getPrecision(BINARY_LENGTH,max); 
     if (negative)
         halfRepresentation *= -1;
-    return halfRepresentation*precision; 
+    return halfRepresentation*length; 
+}
+
+/// @brief Unbox a binary array into a single binary containing 
+///        all the encoded bits in order
+/// @param X an array of binaries, elements must have the same length
+/// @return A binary containing the binary values encoded into a single large binary
+binary unbox_binary(binary X[], uint array_length){ 
+    binary new_binary;
+    if (X[0].length == 0) // If the first element has a length element of 0 the array is empty
+        return new_binary;
+    
+    uint8_t expected_length = X[0].length; // The first determines the expected encoding for all elements
+    new_binary.MAX = X[0].MAX;
+
+    new_binary.length = expected_length * array_length; 
+
+    boost::dynamic_bitset<> encoded_vector(new_binary.length);
+    for (uint i = 0; i < new_binary.length; i++){ // For each binary in X
+        for(uint bit = 0; bit < X[i].length; bit++) {// Copy each bit
+            new_binary.values[(expected_length*i)+bit] = X[i].values[bit];
+        }
+    }
+
+    return new_binary;
+}
+
+binary vector_to_single_binary(double X[], uint dimention, double max, uint bit_length=BINARY_LENGTH){
+
+    binary binary_array[dimention];
+
+    for (uint i = 0; i < dimention; i++){
+        binary_array[i] = double_to_binary(X[i], max, bit_length);
+    }
+
+    return unbox_binary(binary_array, dimention);
 }
 #endif

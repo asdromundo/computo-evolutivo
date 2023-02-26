@@ -30,3 +30,6 @@
 *.exe
 *.out
 *.app
+
+# Boost
+boost_1_81_0/
