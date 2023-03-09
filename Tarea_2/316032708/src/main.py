@@ -4,6 +4,20 @@ import math
 import random as rnd
 
 def read_knapsack_file(relative_path):
+    '''
+    Funcion que recive la ruta relativa de un archivo .txt ejemplo para el problema 0-1 knapsack 
+    y regresa un conjunto de datos. 
+
+    Arguments : 
+    relative_path
+
+    Returns : 
+    n -> numero de elementos : int
+    c -> capacidad maxima : int
+    id_arr -> arreglo de id's : list<int>
+    p_arr -> arreglo de beneficio aportado por el item : list<int> 
+    w_arr -> arreglo de pesos : list<int>
+    '''
 
     #Generamos la ruta 
     #Ejemplo de ruta relativa : '/data/ejeL14n45.txt'
@@ -18,10 +32,8 @@ def read_knapsack_file(relative_path):
     with open(path) as f:
         for line in f:
             strings.append(line.strip())
-            ##print(line.strip())
     #Poblamos la lista de characters 
     for line in strings : characters.append(line.split()) 
-
 
     #Inicializamos los valores a regresar 
     #Numero de elementos n 
@@ -35,6 +47,7 @@ def read_knapsack_file(relative_path):
     #Capacidad de la mochila 
     c=0 
 
+    #Poblamos los arreglos 
     for i in range(len(characters)):
         if(i==0):
             n=int(characters[i][0])
@@ -48,13 +61,31 @@ def read_knapsack_file(relative_path):
 
     #Regresamos una tupla n : numero de elementos, c : capacidad , id_arr : id's, p_arr : beneficios, w_arr: pesos 
     return [n,c,id_arr,p_arr,w_arr]
-    
+
 def knapsack_schema(data):
+    '''
+    Funcion que recibe la tupla de datos regresada por la funcion read_knapsack_file y regresa una representacion 
+    del prblema utilizando un esquema de representación con permutaciones, en especifico combinaciones sin repeticion 
+    agregando a cada elemento (item) dos valores : contribucion (valor objetivo de cada item) y probabilidad de seleccion,
+    la cual se obtiene utilizando seleccion por ruleta. 
+
+    Arguments : 
+    n : int 
+    c : int 
+    id_arr : list<int>
+    p_arr : list<int>
+    w : list<int>
+
+    Returns : 
+    n_elements -> numero de elementos : int 
+    capacity -> capacidad : int 
+    total_items -> Una lista con toda la informacion de cada item : list<list<int, int, int, float, float>>
+    '''
 
     n_elements, capacity, id_arr, values_arr, weights_arr = data[0], data[1], data[2], data[3], data[4] 
     
     #Declaramos nuestro arreglo principal de items  
-    search_space = []
+    total_items = []
 
     #Ahora, para cada item generamos su valor de contribucion 
     contribution_arr = []
@@ -67,16 +98,16 @@ def knapsack_schema(data):
     sum_contribution = sum(contribution_arr)
     #Procedemos a asignarles la probabilidad 
     for i in range(len(id_arr)):
-        #Se multiplica por 50 por que la funcion de 10
+        #
         prob_selection_arr.append(n_elements/2*(contribution_arr[i]/sum_contribution))
 
     #Poblamos el arreglo 
     for i in range(len(id_arr)):
-        search_space.append([id_arr[i], values_arr[i], weights_arr[i], contribution_arr[i], prob_selection_arr[i]])
+        total_items.append([id_arr[i], values_arr[i], weights_arr[i], contribution_arr[i], prob_selection_arr[i]])
 
-    #Solucionar esto por que estamos regresando 2 veces la capacidad y la cantidad de elementos 
-    return [n_elements,capacity, search_space]
+    return [n_elements,capacity, total_items]
 
+#REGISTRAR EN REPORTE Y BORRAR 
 # Con esta función le asignamos a cada item una razón de contribución basada en divir el beneficio que el item aporta sobre el peso 
 # Si el peso es mayor que el valor , la contribución será poca 
 # Si el valor es mayor que el peso, la contribución será mayor 
@@ -84,6 +115,7 @@ def knapsack_schema(data):
 def _contribution_ratio(value, weight):
     return value/weight
 
+#REGISTRAR EN REPORTE Y BORRAR 
 # Con esta función le asignamos a cada item una probabilidad de ser elegido para la solucion aleatoria inicial basandonos en su contribucion
 # vamos a utilizar el operador de seleccion por ruleta para algoritmos geneticos https://en.wikipedia.org/wiki/Fitness_proportionate_selection
 # De este modo, cada item en la mochila tendrá una probabilidad de ser elegido para la solucion aleatoria proporcional a su razon de contribucion 
@@ -91,50 +123,182 @@ def _prob_selection(contribution, total_contribution):
     return contribution/total_contribution
 
 
+def random_knapsack_solution_generator(total_items):
+    '''
+    Funcion que regresa una solucion (combinacion) al problema que no necesariamente es valida. 
+    Basandonos en el operador de selccion por ruleta, a cada item se le asigna una probabilidad 
+    de ser seleccionado en base a su contribucion. 
 
+    Arguments: 
+    total_items -> el conjunto total de items para generar la solucion : list<list<int, int, int, float, float>>
+    
+    Returns: 
+    random_solution -> una solucion generada por medio de seleccion por ruleta : list<int, int, int, float, float>
 
-# De nuevo, refiriendonos al operador de seleccion de ruleta vamos a generar una solucion basada 
-# en la probabilidad que tiene cada item de ser escogido 
-# Aqui es importante resaltar que la permutacion [A,B,C] va a tener el mismo valor que [C,B,A]
-def random_knapsack_solution(search_space):
-
-    #El search space es el tercer elemento de la tupla de knapsack_schema
+    '''
+   
     random_solution = []
-    #Cumple con capacidad 
 
-    for item in search_space: 
+    for item in total_items: 
         ##Si el numero aleatorio es menor a la probabilidad del item, agregamos el item a la solucion 
-        if   rnd.uniform(0,1) < item[4]: 
+        
+        if   rnd.uniform(0,1) < item[4]:
+            ##Aqui podríamos verificar que el peso del item seleccionado no exceda la capacidad, sin embargo 
+            # si hicieramos eso, en el peor de los casos los primeros n-1 items son seleccionados y el n-esimo 
+            # siempre queda fuera por que la capacidad ya se llenó.  
             random_solution.append(item)
 
     return random_solution
 
-    #for i in it.islice(it.combinations_with_replacement(search_space,k), k):
-    #for i in it.combinations_with_replacement(search_space,k):    
-        #print(i)
-    #return rnd.sample(search_space,k)
 
-def valid_random_knapsack_solution(ejemplar):
-    
-    capacity = ejemplar[1]
-    
-    current_sol_capacity = 0
+def valid_random_knapsack_solution_generator(schema):
+    '''
+    Funcion que regresa una solucion (combinacion) al problema que es valida. Para esta funcion restringimos 
+    que la el peso total de la solucion generada con la funcion random_knapsack_solution_generator no exced la capacidad
+
+    Arguments: 
+    schema -> el conjunto de datos 
+    n_elements -> numero de elementos : int 
+    capacity -> capacidad : int 
+    total_items -> Una lista con toda la informacion de cada item : list<list<int, int, int, float, float>>
+
+    Returns: 
+    random_solution -> una solucion valida generada por medio de seleccion por ruleta : list<int, int, int, float, float>s
+
+    '''
+    capacity = schema[1]
     
     while(True):
-        current_sol = random_knapsack_solution(ejemplar[2])
-        for item in current_sol:
-            #Determinamos el "volumen" ocupado por la actual solucion
-            current_sol_capacity += item[2]
-            
+        current_sol = random_knapsack_solution_generator(schema[2])
+
+        current_sol_weight = get_solution_weight(current_sol)
+
         #Si la capacidad de la solcion generada es menor a la capacidad maxima entonces es candidata a solucion inicial valida 
-        if current_sol_capacity < capacity:
-            print(current_sol_capacity) #BORRAR 
+        if current_sol_weight < capacity:
+            #BORRAR
+            print(current_sol_weight) 
             print("OF")
             print(capacity)
+            
             return current_sol
-        else: #De otoro modo reseteamos la capacidad de la solucion actual y generamos una nueva 
-            current_sol_capacity =0
-        
+
+
+def get_item_fitnest(items):
+    '''
+    Funcion que obtiene el mejor item de una lista de items basandose en la probabilidad de cada uno de ellos  
+
+    Arguments: 
+    items -> lista de items : list<list<int, int, int, float, float>>
+
+    Returns : 
+    item -> el item seleccionado : list<int, int, int, float, float>
+    '''
+    for item in items : 
+        if rnd.uniform(0,1) < item[4]:
+            return item
+
+
+def get_solution_weight(solution):
+    '''
+    Funcion que regresa el peso de una solucion
+    
+    Arguments: 
+    solution -> solucion : list<list<int, int, int, float, float>>
+
+    Returns : 
+    weight -> peso de la solucion : int 
+
+    '''
+    weight = 0
+
+    for item in solution:
+        weight += item[2]
+
+    return weight
+
+def get_worst_item(solution):
+    '''
+    Funcion que recibe una solucion y regresa el item con peor contribucion, es decir el item de menor contribucin 
+    
+    Arguments: 
+    solution -> solucion : list<list<int, int, int, float, float>>
+
+    Returns: 
+    item : list<int, int, int, float, float>
+    '''
+
+    #Recordemos que la contribucion se guarda en el indice 3 
+    worst_contribution = solution[0][3]
+    worst_solution = []
+
+    return worst_solution
+
+
+
+#Cómo va a funcionar el operador de vecindad ? 
+# Para la solucion actual hay que revisar el peso total, si el peso total es menor entonces podemos agregar un nuevo item que NO ESTE en la solucion actual 
+# tenemos que considerar de alguna forma la razon 
+# Para seleccionar un nuevo item hay que volver a calcular la probabilidad ? (esto sería lo más optimo )
+# Ya que se seleccionó el nuevo item preguntamos : el peso de la solucion actual + el peso del nuevo item < capacidad 
+#       SI : Entonces regresamos esa nueva solución 
+#       NO : Entonces descartamos ese item , pero como la solución es valida (no excede la capacidad) entonces es posible que mejore 
+#            Hay que buscar al item tal de menor contribucion , lo fijamos y ahora en los items restantantes vamos a generar un conjunto de los items 
+#            con contribución menor al item fijado, si ese conjunto es vacio regresamos la solucion, si no es vacio entonces elegimos uno de esos items 
+#            al azar y lo regresamos (Hay que notar que la solucion que regresamos no necesariamente es valida)
+# Revisar si es mayor descenso o primer descenso  
+
+# Tal vez necesitamo una funcion que reciba un arreglo de items con su fitness asociada y que devuelva uno de ellos 
+def get_neighbor(solution, total_items, capacity):
+    '''
+    Una funcion que recibe una solucion, un conjunto de items y una capacidad y regresa un vecino de esa solucion 
+
+    Arguments : 
+    solution -> solucion para la que se busca un vecino : list<list<int, int, int, float, float>>
+    total_items -> el conjunto total de items : list<list<int, int, int, float, float>>
+    capacity -> la capacidad total : int 
+    
+    Returns : 
+    neighbor -> vecino encontrado que puede o no ser valido : list<list<int, int, int, float, float>> 
+    '''
+    
+
+    neighbor = solution.copy()
+
+    if get_solution_weight(solution) > capacity : 
+        print("El peso total de la solucion supera la capacidad, se regresa la misma solucion")
+        return solution
+
+    #Determinamos la diferencia entre la solucion y el total de items , es decir los items restantes que pueden ser considerados 
+    solution_set = set([tuple(lst) for lst in solution])
+    search_space_set = set([tuple(lst) for lst in total_items])
+    left = [list(t) for t in search_space_set - solution_set]
+
+    #Aqui podríamos tomar al item con menor ranzon, entonces estamos haciendo mayor descenso s
+    
+    #Como el peso total de la solucion recibida no excede la capacidad entonces es posible que podamos agregar un elementos más a la solucion 
+    #Vamos a considerar las mismas probabilidades que obtuvimos desde el equema, aquellos items con probabilidad tendrás más posibilidades 
+    #Este paso sería muy cercano a MAYOR DESCENSO por que connsideramos a todas las soluciones y las que tienen mejor contribucion tienen mayor probabilidad de ser seleccionados
+    new_item = get_item_fitnest(left)
+    
+    #Agregamos el nuevo item a la solucion 
+    neighbor.append(new_item)
+
+    if get_solution_weight(neighbor) < capacidad : 
+        #Si el peso de la nueva solucion es menor a la capacidad entonces regresamos esa solucion
+        return neighbor
+    else: 
+        #Si el peso es mayor o igual a la capacidad, entonces es posible que se pueda mejorar la solucion 
+        #sustituyendo el elemento con menor contribucion por algun candidato que tenga mejor contribucion  
+
+        return 
+
+    return neighbor
+
+    
+
+
+
+
 
 
 if __name__ == '__main__': 
@@ -151,28 +315,44 @@ if __name__ == '__main__':
 
     elementos, capacidad, espacio_busqueda= knapsack_schema(ejemplar_1)
 
+    print("----------------")
+    print("ITEMS TOTALES")
     for item in espacio_busqueda :
         print(item)
 
-    solution = random_knapsack_solution(espacio_busqueda)
+    
+    print("----------------")
+    #solution = random_knapsack_solution_generator(espacio_busqueda)
    
-
     print("----------------")
     print("SOLUCION VALIDA")
-    valid_solution = valid_random_knapsack_solution(knapsack_schema(ejemplar_1))
+    valid_solution = valid_random_knapsack_solution_generator(knapsack_schema(ejemplar_1))
     for item in valid_solution :
         print(item)
     print("----------------")
-
-    
+    print("Solution weight")
+    print(get_solution_weight(valid_solution))
+    print("Items totales")
+    print(len(valid_solution))
     print("----------------")
-    for item in solution :
+    
+    intersec = get_neighbor(valid_solution, espacio_busqueda, capacidad)
+    print("----------------")
+    print("Interseccion ")
+    for item in intersec:
         print(item)
+    print("Items totales")
+    print(len(intersec  ))
+    print("----------------")
 
-    #random = random_knapsack_solution(espacio_busqueda, 5)
+    #print("----------------")
+    #for item in solution :
+        #print(item)
+
+    #random = random_knapsack_solution_generator(espacio_busqueda, 5)
     #math.ceil(elementos/4)
     #print(random)
-    print("----------------")
-    print(len(solution))
-    print("of ")
-    print(elementos)
+    #print("----------------")
+    #print(len(solution))
+    #print("of ")
+    #print(elementos)
