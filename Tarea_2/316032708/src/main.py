@@ -183,24 +183,9 @@ def valid_random_knapsack_solution_generator(schema):
             return current_sol
 
 
-def get_item_fitnest(items):
-    '''
-    Funcion que obtiene el mejor item de una lista de items basandose en la probabilidad de cada uno de ellos  
-
-    Arguments: 
-    items -> lista de items : list<list<int, int, int, float, float>>
-
-    Returns : 
-    item -> el item seleccionado : list<int, int, int, float, float>
-    '''
-    for item in items : 
-        if rnd.uniform(0,1) < item[4]:
-            return item
-
-
 def get_solution_weight(solution):
     '''
-    Funcion que regresa el peso de una solucion
+    [AUXILIAR] Funcion que regresa el peso de una solucion
     
     Arguments: 
     solution -> solucion : list<list<int, int, int, float, float>>
@@ -216,9 +201,23 @@ def get_solution_weight(solution):
 
     return weight
 
+def get_best_item(items):
+    '''
+    [AUXILIAR] Funcion que obtiene el mejor item de una lista de items basandose en la probabilidad de cada uno de ellos  
+
+    Arguments: 
+    items -> lista de items : list<list<int, int, int, float, float>>
+
+    Returns : 
+    item -> el item seleccionado : list<int, int, int, float, float>
+    '''
+    for item in items : 
+        if rnd.uniform(0,1) < item[4]:
+            return item
+
 def get_worst_item(solution):
     '''
-    Funcion que recibe una solucion y regresa el item con peor contribucion, es decir el item de menor contribucin 
+    [AUXILIAR] Funcion que recibe una solucion y regresa el item con peor contribucion, es decir el item de menor contribucin 
     
     Arguments: 
     solution -> solucion : list<list<int, int, int, float, float>>
@@ -228,12 +227,60 @@ def get_worst_item(solution):
     '''
 
     #Recordemos que la contribucion se guarda en el indice 3 
-    worst_contribution = solution[0][3]
-    worst_solution = []
+    worst_solution = solution[0]
+
+    for item in solution:
+        if item[3] < worst_solution[3]:
+            worst_solution = item
 
     return worst_solution
 
 
+def get_set_difference(solution, total_items): 
+    '''
+    [AUXILIAR] Funcion que regresa la diferencia de conjuntos de dos listas, funciona especialmente 
+    para determinar los elementos del conjunto general de items que no estan en la solucion recibida 
+
+    Arguments: 
+    solution -> solucion : list<list<int, int, int, float, float>>
+    total_items -> conjunto completo de items : list<list<int, int, int, float, float>>
+
+    Returns : 
+    left -> la diferencia de los dos conjuntos : list<list<int, int, int, float, float>>
+    '''
+    solution_set = set([tuple(lst) for lst in solution])
+    search_space_set = set([tuple(lst) for lst in total_items])
+    left = [list(t) for t in search_space_set - solution_set]
+
+    return left 
+
+
+def get_mayor_neighborhood(item, total_items): 
+    '''
+    [AUXILIAR] Funcion que encuentra los mejores candidatos para sustituir un item recibidos basandose 
+    en la contribucion y elije a un de ellos basandose en su probabilidad  
+
+    Arguments: 
+    item -> el item n de la cual buscar posibles reemplazos : list<int, int, int, float, float>
+    total_items ->  conjunto completo de items :  list<list<int, int, int, float, float>>
+
+    Returns : 
+    best_candidate
+    '''
+    best_candidates = []
+    for candidate in total_items: 
+        print(type(candidate))
+        if candidate[3] > item[3]:
+            best_candidates.append(candidate)
+
+    print("-------------")
+    print("VERIFICANDO POSIBLES CANDIDATOS BASADOS EN LA CONTRIBUCION ")
+    print("ITEM A REEMPLAZAR :")
+    print(item) 
+    print("MEJORES CANDIDATOS")
+    for i in best_candidates : 
+        print(i)
+    print("-------------")
 
 #Cómo va a funcionar el operador de vecindad ? 
 # Para la solucion actual hay que revisar el peso total, si el peso total es menor entonces podemos agregar un nuevo item que NO ESTE en la solucion actual 
@@ -269,16 +316,18 @@ def get_neighbor(solution, total_items, capacity):
         return solution
 
     #Determinamos la diferencia entre la solucion y el total de items , es decir los items restantes que pueden ser considerados 
-    solution_set = set([tuple(lst) for lst in solution])
-    search_space_set = set([tuple(lst) for lst in total_items])
-    left = [list(t) for t in search_space_set - solution_set]
+    left = get_set_difference(solution, total_items)
+    
+    #solution_set = set([tuple(lst) for lst in solution])
+    #search_space_set = set([tuple(lst) for lst in total_items])
+    #left = [list(t) for t in search_space_set - solution_set]
 
     #Aqui podríamos tomar al item con menor ranzon, entonces estamos haciendo mayor descenso s
     
     #Como el peso total de la solucion recibida no excede la capacidad entonces es posible que podamos agregar un elementos más a la solucion 
     #Vamos a considerar las mismas probabilidades que obtuvimos desde el equema, aquellos items con probabilidad tendrás más posibilidades 
     #Este paso sería muy cercano a MAYOR DESCENSO por que connsideramos a todas las soluciones y las que tienen mejor contribucion tienen mayor probabilidad de ser seleccionados
-    new_item = get_item_fitnest(left)
+    new_item = get_best_item(left)
     
     #Agregamos el nuevo item a la solucion 
     neighbor.append(new_item)
@@ -289,8 +338,13 @@ def get_neighbor(solution, total_items, capacity):
     else: 
         #Si el peso es mayor o igual a la capacidad, entonces es posible que se pueda mejorar la solucion 
         #sustituyendo el elemento con menor contribucion por algun candidato que tenga mejor contribucion  
-
-        return 
+        # 1: Encontrar al elemento de menor contribucion  "X" : get_worst_item
+        # 2: Determinar un conjunto de items "C" que son mejores que "X" , es decir que tienen mejor contribucion 
+        # 3: Seleccionar uno de los items considerando la probabilidad del conjunto total, sea "Y"  
+        # 4: Agregar Y a nuestra solucion  
+        # 5: Aqui podríamos regresar la solucion o revisar si sigue siendo valida 
+        #return
+        print("Esto se murio") 
 
     return neighbor
 
@@ -336,14 +390,18 @@ if __name__ == '__main__':
     print(len(valid_solution))
     print("----------------")
     
-    intersec = get_neighbor(valid_solution, espacio_busqueda, capacidad)
+    best_neighbor = get_neighbor(valid_solution, espacio_busqueda, capacidad)
     print("----------------")
-    print("Interseccion ")
-    for item in intersec:
+    print("Best neighbor")
+    for item in best_neighbor:
         print(item)
+    print("Solution weight")
+    print(get_solution_weight(best_neighbor))
     print("Items totales")
-    print(len(intersec  ))
+    print(len(best_neighbor  ))
     print("----------------")
+
+    get_mayor_neighborhood(best_neighbor,get_set_difference(valid_solution,espacio_busqueda))
 
     #print("----------------")
     #for item in solution :
