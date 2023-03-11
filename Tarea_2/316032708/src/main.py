@@ -80,12 +80,16 @@ def knapsack_schema(data):
     n_elements -> numero de elementos : int 
     capacity -> capacidad : int 
     total_items -> Una lista con toda la informacion de cada item : list<list<int, int, int, float, float>>
+    max_value -> Suma de todos los valores : int 
     '''
 
     n_elements, capacity, id_arr, values_arr, weights_arr = data[0], data[1], data[2], data[3], data[4] 
     
     #Declaramos nuestro arreglo principal de items  
     total_items = []
+
+    #Guardamos la suma total de valores 
+    max_value = sum(values_arr)
 
     #Ahora, para cada item generamos su valor de contribucion 
     contribution_arr = []
@@ -105,7 +109,7 @@ def knapsack_schema(data):
     for i in range(len(id_arr)):
         total_items.append([id_arr[i], values_arr[i], weights_arr[i], contribution_arr[i], prob_selection_arr[i]])
 
-    return [n_elements,capacity, total_items]
+    return [n_elements,capacity,max_value,total_items]
 
 #REGISTRAR EN REPORTE Y BORRAR 
 # Con esta función le asignamos a cada item una razón de contribución basada en divir el beneficio que el item aporta sobre el peso 
@@ -114,14 +118,6 @@ def knapsack_schema(data):
 # Si el peso es muy pequenio la contribución será mayor 
 def _contribution_ratio(value, weight):
     return value/weight
-
-#REGISTRAR EN REPORTE Y BORRAR 
-# Con esta función le asignamos a cada item una probabilidad de ser elegido para la solucion aleatoria inicial basandonos en su contribucion
-# vamos a utilizar el operador de seleccion por ruleta para algoritmos geneticos https://en.wikipedia.org/wiki/Fitness_proportionate_selection
-# De este modo, cada item en la mochila tendrá una probabilidad de ser elegido para la solucion aleatoria proporcional a su razon de contribucion 
-def _prob_selection(contribution, total_contribution):
-    return contribution/total_contribution
-
 
 def random_knapsack_solution_generator(total_items):
     '''
@@ -157,10 +153,11 @@ def valid_random_knapsack_solution_generator(schema):
     que la el peso total de la solucion generada con la funcion random_knapsack_solution_generator no exced la capacidad
 
     Arguments: 
-    schema -> el conjunto de datos 
-    n_elements -> numero de elementos : int 
-    capacity -> capacidad : int 
-    total_items -> Una lista con toda la informacion de cada item : list<list<int, int, int, float, float>>
+    schema -> el conjunto de datos :
+        n_elements -> numero de elementos : int 
+        capacity -> capacidad : int 
+        max_value -> Suma de todos los valores : int 
+        total_items -> Una lista con toda la informacion de cada item : list<list<int, int, int, float, float>>
 
     Returns: 
     random_solution -> una solucion valida generada por medio de seleccion por ruleta : list<int, int, int, float, float>s
@@ -169,18 +166,43 @@ def valid_random_knapsack_solution_generator(schema):
     capacity = schema[1]
     
     while(True):
-        current_sol = random_knapsack_solution_generator(schema[2])
+        current_sol = random_knapsack_solution_generator(schema[3])
 
         current_sol_weight = get_solution_weight(current_sol)
 
         #Si la capacidad de la solcion generada es menor a la capacidad maxima entonces es candidata a solucion inicial valida 
-        if current_sol_weight < capacity:
-            #BORRAR
-            print(current_sol_weight) 
-            print("OF")
-            print(capacity)
-            
+        if current_sol_weight < capacity:  
             return current_sol
+
+
+def fitness(solution,max_value):
+    '''
+    Devuelve el valor objetivo de la funcion basandose minimizar la perdida respecto al valor totarl 
+    Arguments: 
+    solution -> solucion : list<list<int, int, int, float, float>>
+    max_value -> la suma total de todos los valores : int 
+
+    Returns : 
+    fitness -> fitness : int
+    
+    '''
+    return max_value-get_solution_value(solution)
+
+def get_solution_value(solution):
+    '''
+    [AUXILIAR] Funcion que devuelve el valor total de los items de una solucion 
+    Arguments: 
+    solution -> solucion : list<list<int, int, int, float, float>>
+
+    Returns : 
+    value -> valor total : int
+    '''
+    value = 0
+
+    for item in solution:
+        value += item[1]
+
+    return value
 
 
 def get_solution_weight(solution):
@@ -215,26 +237,6 @@ def get_best_item(items):
         if rnd.uniform(0,1) < item[4]:
             return item
 
-def get_worst_item(solution):
-    '''
-    [AUXILIAR] Funcion que recibe una solucion y regresa el item con peor contribucion, es decir el item de menor contribucin 
-    
-    Arguments: 
-    solution -> solucion : list<list<int, int, int, float, float>>
-
-    Returns: 
-    item : list<int, int, int, float, float>
-    '''
-
-    #Recordemos que la contribucion se guarda en el indice 3 
-    worst_solution = solution[0]
-
-    for item in solution:
-        if item[3] < worst_solution[3]:
-            worst_solution = item
-
-    return worst_solution
-
 
 def get_set_difference(solution, total_items): 
     '''
@@ -255,50 +257,9 @@ def get_set_difference(solution, total_items):
     return left 
 
 
-def get_mayor_neighborhood(item, total_items): 
-    '''
-    [AUXILIAR] Funcion que encuentra los mejores candidatos para sustituir un item recibidos basandose 
-    en la contribucion y elije a un de ellos basandose en su probabilidad  
-
-    Arguments: 
-    item -> el item n de la cual buscar posibles reemplazos : list<int, int, int, float, float>
-    total_items ->  conjunto completo de items :  list<list<int, int, int, float, float>>
-
-    Returns : 
-    best_candidate
-    '''
-    best_candidates = []
-    for candidate in total_items: 
-        print(type(candidate))
-        if candidate[3] > item[3]:
-            best_candidates.append(candidate)
-
-    print("-------------")
-    print("VERIFICANDO POSIBLES CANDIDATOS BASADOS EN LA CONTRIBUCION ")
-    print("ITEM A REEMPLAZAR :")
-    print(item) 
-    print("MEJORES CANDIDATOS")
-    for i in best_candidates : 
-        print(i)
-    print("-------------")
-
-#Cómo va a funcionar el operador de vecindad ? 
-# Para la solucion actual hay que revisar el peso total, si el peso total es menor entonces podemos agregar un nuevo item que NO ESTE en la solucion actual 
-# tenemos que considerar de alguna forma la razon 
-# Para seleccionar un nuevo item hay que volver a calcular la probabilidad ? (esto sería lo más optimo )
-# Ya que se seleccionó el nuevo item preguntamos : el peso de la solucion actual + el peso del nuevo item < capacidad 
-#       SI : Entonces regresamos esa nueva solución 
-#       NO : Entonces descartamos ese item , pero como la solución es valida (no excede la capacidad) entonces es posible que mejore 
-#            Hay que buscar al item tal de menor contribucion , lo fijamos y ahora en los items restantantes vamos a generar un conjunto de los items 
-#            con contribución menor al item fijado, si ese conjunto es vacio regresamos la solucion, si no es vacio entonces elegimos uno de esos items 
-#            al azar y lo regresamos (Hay que notar que la solucion que regresamos no necesariamente es valida)
-# Revisar si es mayor descenso o primer descenso  
-
-# Tal vez necesitamo una funcion que reciba un arreglo de items con su fitness asociada y que devuelva uno de ellos 
 def get_neighbor(solution, total_items, capacity):
     '''
-    Una funcion que recibe una solucion, un conjunto de items y una capacidad y regresa un vecino de esa solucion 
-
+    [AUXILIAR]Funcion que nos regresa un vecino dada una solucion 
     Arguments : 
     solution -> solucion para la que se busca un vecino : list<list<int, int, int, float, float>>
     total_items -> el conjunto total de items : list<list<int, int, int, float, float>>
@@ -306,52 +267,78 @@ def get_neighbor(solution, total_items, capacity):
     
     Returns : 
     neighbor -> vecino encontrado que puede o no ser valido : list<list<int, int, int, float, float>> 
-    '''
     
-
+    '''
+    #Obtenemos los items que no están en la solucion 
+    left = get_set_difference(solution,total_items)
+    #Obtenemos un item de forma aleatoria 
+    new_item = rnd.choice(left)
+    #Generamos el vecinos
     neighbor = solution.copy()
 
-    if get_solution_weight(solution) > capacity : 
-        print("El peso total de la solucion supera la capacidad, se regresa la misma solucion")
-        return solution
-
-    #Determinamos la diferencia entre la solucion y el total de items , es decir los items restantes que pueden ser considerados 
-    left = get_set_difference(solution, total_items)
-    
-    #solution_set = set([tuple(lst) for lst in solution])
-    #search_space_set = set([tuple(lst) for lst in total_items])
-    #left = [list(t) for t in search_space_set - solution_set]
-
-    #Aqui podríamos tomar al item con menor ranzon, entonces estamos haciendo mayor descenso s
-    
-    #Como el peso total de la solucion recibida no excede la capacidad entonces es posible que podamos agregar un elementos más a la solucion 
-    #Vamos a considerar las mismas probabilidades que obtuvimos desde el equema, aquellos items con probabilidad tendrás más posibilidades 
-    #Este paso sería muy cercano a MAYOR DESCENSO por que connsideramos a todas las soluciones y las que tienen mejor contribucion tienen mayor probabilidad de ser seleccionados
-    new_item = get_best_item(left)
-    
-    #Agregamos el nuevo item a la solucion 
-    neighbor.append(new_item)
-
-    if get_solution_weight(neighbor) < capacidad : 
-        #Si el peso de la nueva solucion es menor a la capacidad entonces regresamos esa solucion
+    if get_solution_weight(solution) < capacity: 
+        neighbor.append(new_item)
         return neighbor
     else: 
-        #Si el peso es mayor o igual a la capacidad, entonces es posible que se pueda mejorar la solucion 
-        #sustituyendo el elemento con menor contribucion por algun candidato que tenga mejor contribucion  
-        # 1: Encontrar al elemento de menor contribucion  "X" : get_worst_item
-        # 2: Determinar un conjunto de items "C" que son mejores que "X" , es decir que tienen mejor contribucion 
-        # 3: Seleccionar uno de los items considerando la probabilidad del conjunto total, sea "Y"  
-        # 4: Agregar Y a nuestra solucion  
-        # 5: Aqui podríamos regresar la solucion o revisar si sigue siendo valida 
-        #return
-        print("Esto se murio") 
+        #Obtenemos un item aleatorio para ser sustituido en el vecino 
+        deleted_item = rnd.choice(neighbor)
+        neighbor.remove(deleted_item)
+        #Agregamos el nuevo item 
+        neighbor.append(new_item)
+        return neighbor
 
-    return neighbor
+
+def generate_neighborhood(solution, total_items, capacity, epsilon):
+    '''
+    [AUXILIAR]Funcion que genera una vecindad de vecinos igual a episilon 
+    Arguments : 
+    solution -> solucion para la que se busca la vecindad: list<list<int, int, int, float, float>>
+    total_items -> el conjunto total de items : list<list<int, int, int, float, float>>
+    capacity -> la capacidad total : int 
+    epsilon -> distancia (en este caso cantidad de vecinos a generar) : int 
+    
+    Returns : 
+    neighborhood -> Vecindad generada : list<list<list<int, int, int, float, float>>> 
+    '''
+    neighborhood =[]
+    for i in range(epsilon):
+        neighborhood.append(get_neighbor(solution, total_items, capacity))
+
+    return neighborhood
+
+def neighborhood_operator(solution, total_items, capacity, epsilon,max_value):
+    '''
+    Operador de vecindad, recibe una solucion y basandose en mayor descenso regresa un vecino elegido 
+    para ser la nueva solucion
+
+    Arguments:
+    solution -> solucion para la que se busca la vecindad: list<list<int, int, int, float, float>>
+    total_items -> el conjunto total de items : list<list<int, int, int, float, float>>
+    capacity -> la capacidad total : int 
+    epsilon -> distancia (en este caso cantidad de vecinos a generar) : int 
+     
+    Returns: 
+    new_solution -> solucion elegida por mayor descenso en la vecindad : list<list<int, int, int, float, float>>
+    '''
+    #Puede pasar que ningun vecino mejore la solcion ?  
+
+    #Obtenemos la vecindad de la solucion recibida 
+    neighborhood = generate_neighborhood(solution,total_items,capacity,epsilon)
+
+    #Buscamos al mejor vecino  
+    new_solution = solution.copy()
 
     
+    for neighbor in neighborhood:
+        if fitness(neighbor,max_value) <= fitness(new_solution,max_value):
+            new_solution = neighbor.copy()
+    
 
-
-
+    #Puede que ninguna de las soluciones sea mejor, en tal caso regresamos la misma solucion 
+    if new_solution == []:
+        return solution
+    
+    return new_solution
 
 
 
@@ -367,7 +354,9 @@ if __name__ == '__main__':
     ejemplar_7 = read_knapsack_file('/data/ejeL10n20.txt')
     #print(ejemplar_8)
 
-    elementos, capacidad, espacio_busqueda= knapsack_schema(ejemplar_1)
+
+    #El esquema debe regresar el valor total 
+    elementos, capacidad, valor_maximo, espacio_busqueda= knapsack_schema(ejemplar_1)
 
     print("----------------")
     print("ITEMS TOTALES")
@@ -388,20 +377,24 @@ if __name__ == '__main__':
     print(get_solution_weight(valid_solution))
     print("Items totales")
     print(len(valid_solution))
+    print("Fitness de la solucion")
+    print(fitness(valid_solution, valor_maximo))
     print("----------------")
     
-    best_neighbor = get_neighbor(valid_solution, espacio_busqueda, capacidad)
+    print("Obtiene nueva solucion")
     print("----------------")
-    print("Best neighbor")
-    for item in best_neighbor:
+    nueva_solucion = neighborhood_operator(valid_solution,espacio_busqueda,capacidad,5,valor_maximo)
+    for item in nueva_solucion: 
         print(item)
     print("Solution weight")
-    print(get_solution_weight(best_neighbor))
+    print(get_solution_weight(nueva_solucion))
     print("Items totales")
-    print(len(best_neighbor  ))
-    print("----------------")
+    print(len(nueva_solucion))
+    print("Fitness de la solucion")
+    print(fitness(nueva_solucion, valor_maximo))
 
-    get_mayor_neighborhood(best_neighbor,get_set_difference(valid_solution,espacio_busqueda))
+    print("----------------")
+    #get_mayor_neighborhood(neighbor,get_set_difference(valid_solution,espacio_busqueda))
 
     #print("----------------")
     #for item in solution :
