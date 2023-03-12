@@ -1,7 +1,4 @@
-import itertools as it #Biblioteca para generar permutaciones 
-import math 
 import random as rnd
-import sys
 
 import knapsack_reader as kr #Script para leer ejemplares de knapsack  
 
