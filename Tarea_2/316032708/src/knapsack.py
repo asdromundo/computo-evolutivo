@@ -103,7 +103,13 @@ class Knapsack:
 
         '''
         #Obtenemos un item que no este en la solucion 
-        new_item = rnd.choice(self.get_diff_items(sol))
+        diff = self.get_diff_items(sol)
+        
+        #Puede ocurrir que la solucion contenga todos los elementos, en tal caso regresamos la solucion 
+        if(diff == []):
+            return sol
+
+        new_item = rnd.choice(diff)
         
         neighbor = sol.copy()
        

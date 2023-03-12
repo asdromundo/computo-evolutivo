@@ -1,7 +1,7 @@
 import sys
 import knapsack as knap
 import knapsack_reader as kr
-
+import simulated_annealing
 
 if __name__ == '__main__': 
 
@@ -28,10 +28,12 @@ if __name__ == '__main__':
     n, c, ids, vals, ws = dic_exemplars[int(sys.argv[1])]
     schema = knap.Knapsack( n, c, ids, vals, ws)
 
-
     ##Pruebas 
-    sol_ex = schema.generate_random_sol() 
-    epsilon = 5 
-    print("La vecindad de esa solucion con tamanio {}  es: ".format(epsilon))
-    vecindad = schema.generate_neighborhood(sol_ex,5)
-    [print(str(s)+'\nFitness :{}'.format(schema.get_fitness_sol(s))+'\n Weight :{}'.format(schema.get_weight_sol(s)) ) for s in vecindad]
+    #sol_ex = schema.generate_random_sol() 
+    #epsilon = 5 
+    #print("La vecindad de esa solucion con tamanio {}  es: ".format(epsilon))
+    #vecindad = schema.generate_neighborhood(sol_ex,5)
+    #[print(str(s)+'\nFitness :{}'.format(schema.get_fitness_sol(s))+'\n Weight :{}'.format(schema.get_weight_sol(s)) ) for s in vecindad]
+
+    recocido = simulated_annealing.SimAnnealing(schema,10)
+    recocido.execute()
