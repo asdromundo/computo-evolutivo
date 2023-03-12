@@ -259,7 +259,7 @@ def get_set_difference(solution, total_items):
 
 def get_neighbor(solution, total_items, capacity):
     '''
-    [AUXILIAR]Funcion que nos regresa un vecino dada una solucion 
+    [AUXILIAR]  
     Arguments : 
     solution -> solucion para la que se busca un vecino : list<list<int, int, int, float, float>>
     total_items -> el conjunto total de items : list<list<int, int, int, float, float>>
@@ -343,15 +343,15 @@ def neighborhood_operator(solution, total_items, capacity, epsilon,max_value):
 
 
 if __name__ == '__main__': 
-    ejemplar_1 = read_knapsack_file('/data/ejeL14n45.txt')
     ejemplar_2 = read_knapsack_file('/data/ejeL1n10.txt')
+    ejemplar_7 = read_knapsack_file('/data/ejeL10n20.txt')
+    ejemplar_1 = read_knapsack_file('/data/ejeL14n45.txt')
     ejemplar_3 = read_knapsack_file('/data/ejeknapPI_11_20_1000_100.txt')
     ejemplar_4 = read_knapsack_file('/data/ejeknapPI_1_50_1000000_14.txt')
     ejemplar_8 = read_knapsack_file('/data/ejeknapPI_3_200_1000_14.txt')
     ejemplar_9 = read_knapsack_file('/data/ejeknapPI_13_100_1000_18.txt')
     ejemplar_5 = read_knapsack_file('/data/eje1n1000.txt')
     ejemplar_6 = read_knapsack_file('/data/eje2n1000.txt')
-    ejemplar_7 = read_knapsack_file('/data/ejeL10n20.txt')
     #print(ejemplar_8)
 
 

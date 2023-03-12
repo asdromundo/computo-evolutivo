@@ -1,6 +1,8 @@
 import itertools as it #Biblioteca para generar permutaciones 
 import math 
 import random as rnd
+import sys
+
 import knapsack_reader as kr #Script para leer ejemplares de knapsack  
 
 class Knapsack: 
@@ -18,7 +20,7 @@ class Knapsack:
         Capacidad maxima del ejemplar 
     max_value : int 
         Valor maximo del ejemplar, se utiliza para determinar la perdida en la funcion objetivo  
-    total_items : list < list <id, beneficio, peso, contribucion, pro_seleccion> >
+    total_items : list : list : [id : int, beneficio : int, peso : int]
         Lista de todos los elementos en el ejemplar
     total_items_set : 
         Conjunto que representa a total_items para realizar operaciones de conjuntos
@@ -36,22 +38,72 @@ class Knapsack:
         
 
     def generate_random_sol(self): 
+        '''
+        Genera una solcion aleatoria, por cada item hay una probabilidad de .5 de que sea seleccionado para la solucion 
+
+        Returns:
+        sol : list : list : [id : int, beneficio : int, peso : int] 
+            solucion generada aleatoriamente con probabilidad .5 
+        '''
         return [item for item in self.total_items if rnd.uniform(0,1) < .5]
     
     def get_fitness_sol(self, sol): 
+        '''
+        Devuelve el valor objetivo de la funcion basandose minimizar la perdida respecto al maximo beneficio
+        
+        Args : 
+        sol : list : list : [id : int, beneficio : int, peso : int] 
+            solucion a evaluar 
+
+        Returns: 
+        fitness : int 
+            Valor objetivo de la solucion sol 
+        '''
         return self.max_value - sum([item[1] for item in sol])
 
     def get_weight_sol(self, sol):
+        '''
+        Devuelve el peso dada una solucion 
+
+        Args:
+        sol : list : list : [id : int, beneficio : int, peso : int] 
+            solucion a evaluar  
+
+        Returns: 
+        wieght : int 
+            Peso total de la solucion sol 
+        '''
         return sum(item[2] for item in sol)
     
-    def get_left_items(self, sol):
+    def get_diff_items(self, sol):
+        '''
+        Devuelve los items que estan en el conjunto inicial de items y que no estan en la solucion 
+
+        Args:
+        sol : list : list : [id : int, beneficio : int, peso : int]
+            solucion a la que restar items del conjunto total de items 
+        
+        Returns: 
+        diff : list : list : [id : int, beneficio : int, peso : int]
+            Diferencia entre el conjunto total de items y la solucion recibida sol 
+        '''
         sol_set = set([tuple(lst) for lst in sol])
         return [list(item) for item in self.items_set - sol_set]
 
     def get_neighbor(self,sol):
-        
+        '''
+        Genera un vecino de la solucion recibida. Si el peso total de la solucion recibida 
+        no excede la capacidad maxima entonces se agrega un item aleatorio que no tenga la solucion. 
+        De otro modo se reemplaza un item aleatorio por algun otro que no tenga la solucion .
+
+        Args:
+        sol : list : list : [id : int, beneficio : int, peso : int]
+            solucion base para encontrar una solucion vecina     
+
+
+        '''
         #Obtenemos un item que no este en la solucion 
-        new_item = rnd.choice(self.get_left_items(sol))
+        new_item = rnd.choice(self.get_diff_items(sol))
         
         neighbor = sol.copy()
        
@@ -66,28 +118,18 @@ class Knapsack:
         return neighbor
 
     def generate_neighborhood(self, sol, epsilon): 
+        '''
+        Genera una vecindad para la solucion recibida con una cantidad de vecinos igual a epsilon. 
+
+        Args: 
+        sol : list : list : [id : int, beneficio : int, peso : int] 
+            solucion base para encontrar una solucion vecina
+        epsilon : int 
+            numero de vecinos a generar (tamanio de la vecindad)
+
+
+        Returns: 
+        neighborhood : list : list : [id : int, beneficio : int, peso : int]
+        '''
 
         return [self.get_neighbor(sol) for i in range(epsilon)]
-
-
-if __name__ == '__main__': 
-
-
-    ejemplar_1 = kr.read_knapsack_file('/data/ejeL14n45.txt')
-
-    n, c, ids, vals, ws = ejemplar_1
-
-    knapsack_ej = Knapsack(n, c, ids, vals, ws)
-    sol_ex = knapsack_ej.generate_random_sol() 
-
-    #print(sol_ex)
-    #print('{} of {} Posibles items'.format(len(sol_ex), n))
-    #sol_fit = knapsack_ej.get_fitness_sol(sol_ex)
-    #print('Fitness funtion : {}'.format(sol_fit))
-    #sol_w = knapsack_ej.get_weight_sol(sol_ex)
-    #print('La solucion ocupa {} de la capacidad maxima {} '.format(sol_w, c))
-    epsilon = 5 
-    print("La vecindad de esa solucion con tamanio {}  es: ".format(epsilon))
-    vecindad = knapsack_ej.generate_neighborhood(sol_ex,5)
-    [print(str(s)+'\nFitness :{}'.format(knapsack_ej.get_fitness_sol(s))+'\n Weight :{}'.format(knapsack_ej.get_weight_sol(s)) ) for s in vecindad]
-
