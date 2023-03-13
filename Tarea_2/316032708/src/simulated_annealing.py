@@ -84,7 +84,8 @@ class SimAnnealing():
         '''
         #Arreglos de datos 
         fitness_values = []
-        #weihts_values = []
+        weihts_values = []
+        sols = []
 
         #Generacion de solucion aleatoria inicial 
         self.current_sol = self.knapsack.generate_random_sol()
@@ -104,21 +105,22 @@ class SimAnnealing():
                 self.current_sol = temp_sol
 
             current_fitness = self.knapsack.get_fitness_sol(self.current_sol)
-            
+            current_weight = self.knapsack.get_weight_sol(self.current_sol)
             #print(self.current_sol)
             #print('Fitness de la solucion actual :{} '.format(current_fitness))
             #print('Peso de la solucion actual: {}'.format(self.knapsack.get_weight_sol(self.current_sol)))
             
             fitness_values.append(current_fitness)
-
+            weihts_values.append(current_weight)
+            sols.append(self.current_sol)
 
             self.slow_cooling_schema()
         
         #print('Maximo valor : {}'.format(self.knapsack.max_value))
         #print('Capacidad Maxima : {}'.format(self.knapsack.max_value))
 
-        
-        return fitness_values
+
+        return [sols,fitness_values,weihts_values]
 
         
 

@@ -57,4 +57,22 @@ def read_knapsack_file(relative_path):
             w_arr.append(int(characters[i][2]))
 
     #Regresamos una tupla n : numero de elementos, c : capacidad , id_arr : id's, p_arr : beneficios, w_arr: pesos 
+
     return [n,c,id_arr,p_arr,w_arr]
+
+def write_knapsack_file(relative_path, data):
+    '''
+    Args: 
+    relative_path : string 
+        la ruta del archivo a escribir
+    data : list : string 
+        la lista de datos a escribir 
+    
+    '''
+    #Generamos la ruta 
+    #Ejemplo de ruta relativa : '/data/ejeL14n45.txt'
+    path = os.getcwd()+relative_path
+
+    with open(path,'w') as f:
+        for da in data: 
+            f.writelines(da)
