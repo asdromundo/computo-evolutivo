@@ -5,13 +5,14 @@ import pandas as pd
 import knapsack as kp
 import knapsack_reader as kr
 
+import hill_climbing as hc 
 
 
 if __name__ == '__main__': 
 
     
 
-    paths = ['/data/ejeL14n45.txt']#
+    paths = ['/data/ejeL14n45.txt', '/data/eje1n1000.txt']#
     
     
     exemplars = [ kr.read_knapsack_file(paths[i]) for i in range(len(paths)) ]
@@ -30,17 +31,6 @@ if __name__ == '__main__':
     #print(max_benefit)    
 
     sol = kp.generate_random_sol(data)
-    print(sol)
-    print("Fitness :")
-    print(kp.evaluate(sol))
-    print("Amount items :")
-    print(len(sol.carried_items))
-    print(">>>>>>>>")
 
-    best_neighbor = kp.neighborhood_operator(sol,c,2)
-    print(best_neighbor)
-    print("Fitness :")
-    print(kp.evaluate(best_neighbor))
-    print("Amount items :")
-    print(len(best_neighbor.carried_items))
-
+    final_sol = hc.hill_climbing(sol, 3000, c)
+    print(final_sol)
