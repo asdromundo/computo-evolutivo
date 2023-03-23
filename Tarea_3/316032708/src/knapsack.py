@@ -36,7 +36,18 @@ class Solution:
 
 
 def generate_random_sol(data) : 
+	'''
+	Funcion para generar una soluciion aleatoria 
 
+	Args: 
+	data : list : [id : int, beneficio : int, peso : int]
+		El total de items a considerar para generar la solucion 
+
+	Returns: 
+	solution : Solution 
+		Una solucion que considera items con una probabilidad de .5 
+
+	'''
 	carried_items= []
 	no_carried_items = []
 
@@ -50,7 +61,39 @@ def generate_random_sol(data) :
 
 	return Solution(carried_items, no_carried_items)
 
-def neighborOperator(solution, capacity):
+def evaluate(solution, max_benefit):
+	'''
+	Funcion para obtener el valor objetivo de una solucion, funciona restando la suma total del beneficio 
+	de los items que la solucion carga menos el beneficio maximo que se obtiene al sumar el beneficio de 
+	cada item del conjunto total. 
+
+	Args: 
+	solution : Solution 
+		Solucion a evaluar 
+
+	max_benefit: int 
+		Maximo beneficio obtenido al sumar todos los items del conjunto total 
+	'''
+	return max_benefit - solution.get_value()
+
+
+def basic_swap_neighbor(sol):
+
+	solution = Solution(sol.carried_items,sol.no_carried_items)
+
+	temp_item_1 = rnd.choice(solution.carried_items)
+	temp_item_2 = rnd.choice(solution.no_carried_items)
+
+	solution.carried_items.remove(temp_item_1)
+	solution.no_carried_items.remove(temp_item_2)
+
+	solution.carried_items.append(temp_item_2)
+	solution.no_carried_items.append(temp_item_1)
+
+	return solution
+
+
+def neighbor_operator(solution, capacity):
 	'''
 	Args: 
 	solution : Solution 
@@ -137,18 +180,34 @@ def neighborOperator(solution, capacity):
 
 	neighbor_3.no_carried_items.remove(new_items[0])
 	neighbor_3.no_carried_items.remove(new_items[1])
-
+	
 	neighbor_3.no_carried_items.append(deleted_items[0])
-	neighbor_3.no_carried_items.remove(deleted_items[1])
+	neighbor_3.no_carried_items.append(deleted_items[1])
 
 	if neighbor_3.get_weight() <= capacity : 
 		return neighbor_3
 
 
-	#Si ninguno de los casos resulta ser una solucion valida, regresamos la misma solucion
-	return neighbor
+	#Si ninguno de los casos resulta ser una solucion valida, regresamos un vecino que itercambia un solo elemento 
+	return basic_swap_neighbor(neighbor)
+
+def neighborhood_operator(solution, capacity, max_benefit,epsilon):
+
+	neighborhood = []
+	
+	#Generamos una vecindad de tamanio epislon 
+	for i in range(epsilon):
+		neighborhood.append(neighbor_operator(solution, epsilon))
 
 
+	#Obtenemos al mejor vecino 
+	best_neighbor = neighborhood[0]
+	for neighbor in neighborhood : 
+		if evaluate(neighbor,max_benefit) >= evaluate(best_neighbor,max_benefit):
+			best_neighbor = neighbor
+
+
+	return best_neighbor  
 
 
 

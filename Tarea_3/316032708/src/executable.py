@@ -25,31 +25,15 @@ if __name__ == '__main__':
     n, c, ids, vals, ws = dic_exemplars[int(sys.argv[1])]
 
     data = [[ids[i], vals[i], ws[i]] for i in range(len(ids))]
-    
+    max_benefit = sum(d[1] for d in data)
+    #print(max_benefit)    
 
     sol = kp.generate_random_sol(data)
     print(sol)
-    print(sol.carried_items+sol.no_carried_items == data)    
+    print(kp.evaluate(sol,max_benefit))
+    print(">>>>>>>>")
 
-    print(">>>>>>>>>>")
+    best_neighbor = kp.neighborhood_operator(sol,c,max_benefit,8)
+    print(best_neighbor)
+    print(kp.evaluate(best_neighbor,max_benefit))
 
-    temp_1 = set([tuple(lst) for lst in sol.carried_items+sol.no_carried_items])
-    temp_2 = set([tuple(lst) for lst in data])
-    diff = [list(item) for item in temp_1 - temp_2]
-
-    print(diff)
-    print(">>>>>>>>>>")
-
-    print("----------------")
-
-    neighbor = kp.neighborOperator(sol, c)
-    print(neighbor)
-    print(">>>>>>>>>>")
-
-    temp_1 = set([tuple(lst) for lst in neighbor.carried_items+neighbor.no_carried_items])
-    temp_2 = set([tuple(lst) for lst in data])
-    diff = [list(item) for item in temp_1 - temp_2]
-
-    print(diff)
-    print(">>>>>>>>>>")
-    print(len(neighbor.carried_items+neighbor.no_carried_items) == len(data))
