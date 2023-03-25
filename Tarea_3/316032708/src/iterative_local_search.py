@@ -1,55 +1,73 @@
+import math  
+import random as rnd  
+from copy import deepcopy
+
 import knapsack as kp 
 import hill_climbing as hc 
 
 
-def iterative_local_search():
-	pass
+def iterative_local_search(data,iterations,capacity):
+	
+	first_sol = kp.generate_random_sol(data)
+	s_hc = hc.hill_climbing(first_sol, 3000, capacity)
 
+	s_best = s_hc
+	
+	record = record = [0 for i in range(len(first_sol.carried_items)+ len(first_sol.no_carried_items))]
 
-def perturbation(best_sol, record):
+	for i in range(iterations):
+		s_p = frecuency_perturbation(s_best,record,.5)
+		s_hc_p = hc.hill_climbing(s_p,3000,capacity)
+
+		if s_hc_p.fitness_value < s_best.fitness_value:
+			s_best = s_hc_p
+
+	print(record)
+	return s_best 
+
+def frecuency_perturbation(best_sol, record, strong):
 	'''
 	Estrategia de perturbacion 
 
 	Args: 
-	best_sol : Solution 
+	best_sol : Solution
+		Solucion a perturbar  
 	record : list [int]
+		Historial de perturbaciones, en este caso es el arreglo de frecuecnias 
+	strong : float 
+		Fuerza de perturbacion para determinar a cuantos elmentos de la solucion se va a perturbar 
+
 
 	Returns : 
 	perturbed_sol : Solution 
 	'''
-	# El arreglo va a ser del tipo [1,0,0,2,....] mostrando la frecuencia con que fue perturbado 
-	#Primero tenemos que revisar 
 
+	# Obtenemos el numero de elementos a ser perturbados (estos elementos van a ser perturbados en carried_items) 
+	eta = math.floor(len(best_sol.carried_items)*strong)
 
+	# Obtenemos el indice de los primeros "eta" elementos de nuestro historial "record" que tienen menor valor
+	# Es decir obtenemos los elementos con menor frecuencia para ser perturbados 
+	indices = find_smallest_indices(record[:len(best_sol.carried_items)], eta)
 
-	#Necesitamos un arreglo que lleve registros sobre qué indices  de la Solution.carried_items fueron perturbados 
-	#La cuestion es que el operador de vecindad agrega Y swapea elementos SOLO cuando la capacidad ha sido excedida 
-	#Entonces, la solucion que recibimos debe ya tener un tamanio fijo (en teoria) por lo que el arreglo de frecuencias F
-	#El cual va a ser del mismo tamanio que Solution.carried_items, entonces es posible que en alguna iteracion se cambien 
-	#El tamanio de la solucion 
-	
-	#Aqui el pedo es que el arreglo de frecuencias debe ser del mismo tamanio 
-	pass
+	#Perturbamos la solucion 
+	p_solution = deepcopy(best_sol)
 
-def get_frecuency_array(sol, record):
+	new_carried, new_no_carried =[],[]
 
-	#Puede ser que el arreglo sea del tamanio de todos los items pero en ese caso, como vamos a considerar 
-	#A los primeros elementos menores de un arreglo ? 
+	if(len(indices) > len(p_solution.no_carried_items)):
+		indices = indices[:len(p_solution.no_carried_items)]
 
-	#Hay que revisar si len(sol.carried_items) == len(record)
+	new_carried, new_no_carried = many_swaps(p_solution.carried_items, p_solution.no_carried_items, indices)	
 
-	#Si  len(sol.carried_items) < len(record)
-	#Entonces hay que elminar el ultimo registro de record por que 
+	for index in indices:
+			record[index] = record[index]+1
 
-
-	pass 
-
-
+	return kp.Solution(new_carried, new_no_carried) 
 
 def find_smallest_indices(record, k):
 	'''
 	Funcion que recibe el arreglo de frecuencias y un entero k, regresa los 
-	k indices de los elementos en frecuencias con menor frecuencia. 
+	k indices de los elementos con menor frecuencia. 
 
 	Args : 
 	record : list [int]
@@ -68,3 +86,29 @@ def find_smallest_indices(record, k):
 	indices = [i for i,x in enumerate(record) if x in minor_frecuency]
 
 	return indices
+
+def many_swaps(list_one, list_two, indices):
+
+	#Es importante verificar que ambas listas tengan al menos la cantidad de indices 
+	#En general la lista dos es la que tendrá menos elemetos 
+	#Vamos a considerar a los primeros list_two[len(indices)]
+
+	#Tenemos que basarnos en la maxima cantidad de elementos en list_two 
+	#primero revisamos 
+
+	#Obtenemos los elemento de la primer lista 
+	temp_elements_1 = [list_one[index] for index in indices]
+
+	#Obtenemos los elementos de la segunda lista de forma aleatoria
+	#Aqui no hemos considerado que pasa si la lista de items que no son cargados no tiene suficientes elementos 
+	temp_elements_2 = rnd.sample(list_two, len(indices))
+
+	#Removemos los elementos
+	for e in temp_elements_1 : 
+		list_one.remove(e)
+
+	for e in temp_elements_2 : 
+		list_two.remove(e)	
+
+	return list_one + temp_elements_2, list_two + temp_elements_1
+

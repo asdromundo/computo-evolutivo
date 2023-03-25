@@ -24,9 +24,10 @@ class Solution:
 		self.no_carried_items = no_carried
 		self.max_value = sum(item[1] for item in self.carried_items) + sum(item[1] for item in self.no_carried_items)
 		self.fitness_value = self.max_value-sum(item[1] for item in self.carried_items) 
+		self.total_items = len(self.carried_items) + len(self.no_carried_items)
 
 	def __str__(self):#+"Fitness value: "+str(self.fitness_value)
-		return "Loaded Items: "+ str(self.carried_items) + "\n" +"Non Loaded Items: "+ str(self.no_carried_items)+ "\n" + "Total Benefit :"+str(self.get_value()) + "\n" + "Total Weight :"+ str(self.get_weight()) + "\n" +"Fitness :"+ str(self.fitness_value)
+		return "Loaded Items: "+ str(self.carried_items) + "\n" +"Non Loaded Items: "+ str(self.no_carried_items)+ "\n" + "Total Benefit :"+str(self.get_value()) + "\n" + "Total Weight :"+ str(self.get_weight()) + "\n" +"Fitness Min:"+ str(self.fitness_value) + "\n" +"Fitness Max:"+ str(self.max_value-self.fitness_value) 
 
 	def get_weight(self):
 		return sum(item[2] for item in self.carried_items)

@@ -25,7 +25,6 @@ def hill_climbing(solution, iterations, capacity):
 			current_sol = best_neighbor
 
 
-	print("Capacidad {}".format(capacity))
 	return current_sol 	
 
 

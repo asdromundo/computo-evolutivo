@@ -6,6 +6,7 @@ import knapsack as kp
 import knapsack_reader as kr
 
 import hill_climbing as hc 
+import iterative_local_search as ils 
 
 
 if __name__ == '__main__': 
@@ -30,7 +31,4 @@ if __name__ == '__main__':
     #max_benefit = sum(d[1] for d in data)
     #print(max_benefit)    
 
-    sol = kp.generate_random_sol(data)
-
-    final_sol = hc.hill_climbing(sol, 3000, c)
-    print(final_sol)
+    print(ils.iterative_local_search(data,1000,c))
