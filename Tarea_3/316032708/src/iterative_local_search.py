@@ -6,28 +6,136 @@ import knapsack as kp
 import hill_climbing as hc 
 
 
-def iterative_local_search(data,iterations,capacity):
-	
+def iterative_local_search(data,iterations,capacity,mode,eta,t):
+	'''
+	Implementacion de busqueda local iterativa 
+
+	Args: 
+	data : list : list : [id : int, beneficio : int, peso : int]
+		Es el conjunto total de items pertenecientes al ejemplar 
+	iterations : int 
+		Condicion de paro, numero de iteraciones *NOTA EN REPORTE 
+	capacity : int 
+		Capacidad maxima del ejemplar 
+	mode : int 
+		Es una bandera para determinar qu\'e metodo de perturbacion utilizar 
+	eta : float 
+		Es la fuerza de perturbacion 
+	t : int 
+		temperatura 
+	Returns: 
+	s_best : Solution 
+		La mejor solucion encontrada 
+	'''	
+	#Generamos la solucion iniicial de forma aleatoria 
 	first_sol = kp.generate_random_sol(data)
+	#Primera solucion con optimizacion local 
 	s_hc = hc.hill_climbing(first_sol, 3000, capacity)
 
 	s_best = s_hc
-	
-	record = record = [0 for i in range(len(first_sol.carried_items)+ len(first_sol.no_carried_items))]
+	#Historial para la perturbacion por frecuencia 
+	record = []
 
-	for i in range(iterations):
-		s_p = frecuency_perturbation(s_best,record,.5)
-		s_hc_p = hc.hill_climbing(s_p,3000,capacity)
 
-		if s_hc_p.fitness_value < s_best.fitness_value:
-			s_best = s_hc_p
+	temperature = t 
 
-	print(record)
+	if(mode > 1 or mode < 0):
+		mode = 1
+
+	#Condicional para determinar qué perturbacion utilizar 
+	if(mode == 1):
+		#Entonces utilizamos perturbacion por frecuencia 
+		record = [0 for i in range(len(first_sol.carried_items)+ len(first_sol.no_carried_items))]
+		for i in range(iterations):
+			s_p = frecuency_perturbation(s_best,record,eta)
+			s_hc_p = hc.hill_climbing(s_p,3000,capacity)
+
+			if s_hc_p.fitness_value < s_best.fitness_value:
+				s_best = s_hc_p
+			#Criterio de aceptacion usando temperatura 
+			elif rnd.uniform(0,1) < prob(s_best,s_hc_p,t):
+				s_best = s_hc_p
+
+			t = slow_cooling_schema(t,0.01)
+
+		print(record)		
+	else : 
+		for i in range(iterations):
+			s_p = random_perturbation(s_best,eta)
+			s_hc_p = hc.hill_climbing(s_p,3000,capacity)
+
+			if s_hc_p.fitness_value < s_best.fitness_value:
+				s_best = s_hc_p
+			#Criterio de aceptacion usando temperatura 
+			elif rnd.uniform(0,1) < prob(s_best,s_hc_p,t):
+				s_best = s_hc_p
+
+			t = slow_cooling_schema(t,0.01)
+
 	return s_best 
+
+def prob(current_sol,next_sol,temperature):
+    '''
+	Probabilidad de aceptacion dada una solucion vecina de la solucion actual 
+	Args:
+	next_sol : list : list : [id : int, beneficio : int, peso : int]
+		solucion candidata a ser solucion actual 
+	Returns 
+        proba : float 
+		proabilidad de ser aceptada  
+	'''    
+    return math.pow( math.e, -( next_sol.fitness_value - (current_sol.fitness_value/temperature)))
+
+def slow_cooling_schema(temperature,cooling_beta):
+	'''
+	Esquema de enfriamiento con decremento lento. Cada iteracion disminuye la temperatura usando el valor de cooling_beta 
+	'''
+	# T = T / (1 + betha * T)
+	# betha : 0.001, 0.005, 0.01
+	return temperature / 1+ cooling_beta*temperature
+
+
+
+def random_perturbation(best_sol, strong):
+	'''
+	Estrategia de perturbacion basada en seleccionar indices de elementos de Solution.carried_items de forma aleatoria 
+	
+	Args: 
+	best_sol : Solution
+		Solucion a perturbar  
+	strong : float 
+		Fuerza de perturbacion para determinar a cuantos elmentos de la solucion se va a perturbar
+
+	Returns: 
+	perturbed_sol : Solution
+
+	'''
+	# Obtenemos el numero de elementos a ser perturbados (estos elementos van a ser perturbados en carried_items) 
+	eta = math.floor(len(best_sol.carried_items)*strong)
+
+	#Obtenemos una muestra aleatoria de carried_items 
+	random_items = rnd.sample(best_sol.carried_items, eta)
+	#Obtenemos los indices 
+	indices = [best_sol.carried_items.index(e) for e in random_items]
+
+	p_solution = deepcopy(best_sol)
+
+	#Perturbamos la solucion 
+	new_carried, new_no_carried =[],[]
+
+
+	#Perturbamos la solucion 
+	if(len(indices) > len(p_solution.no_carried_items)):
+		indices = indices[:len(p_solution.no_carried_items)]
+
+	new_carried, new_no_carried = many_swaps(p_solution.carried_items, p_solution.no_carried_items, indices)	
+
+	
+	return kp.Solution(new_carried, new_no_carried) 
 
 def frecuency_perturbation(best_sol, record, strong):
 	'''
-	Estrategia de perturbacion 
+	Estrategia de perturbacion basada en un arreglo de frecuencias "record"
 
 	Args: 
 	best_sol : Solution
@@ -49,11 +157,13 @@ def frecuency_perturbation(best_sol, record, strong):
 	# Es decir obtenemos los elementos con menor frecuencia para ser perturbados 
 	indices = find_smallest_indices(record[:len(best_sol.carried_items)], eta)
 
-	#Perturbamos la solucion 
+	
 	p_solution = deepcopy(best_sol)
 
 	new_carried, new_no_carried =[],[]
 
+
+	#Perturbamos la solucion 
 	if(len(indices) > len(p_solution.no_carried_items)):
 		indices = indices[:len(p_solution.no_carried_items)]
 

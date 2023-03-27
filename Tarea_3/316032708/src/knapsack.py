@@ -108,6 +108,14 @@ def neighbor_operator(sol,capacity):
 		neighbor.carried_items.append(temp_item_2)
 		neighbor.no_carried_items.remove(temp_item_2)
 	else :
+		#Encontramos al item de menor peso del conjunto que no carga 
+		#sort_nc = sorted(neighbor.no_carried_items,key=lambda x: x[2])
+		#temp_item_2 = sort_nc[0] 
+		#Encontramos al item de mayor peso del conjunto que carga 
+		#sort_c = sorted(neighbor.carried_items,key=lambda x: x[2])	
+		#temp_item_1 = sort_c[-1]
+		#Para mejorar esto podemos asignarle a cada item un valor de aptitud 
+
 		neighbor.carried_items.remove(temp_item_1)
 		neighbor.no_carried_items.remove(temp_item_2)
 
@@ -115,7 +123,6 @@ def neighbor_operator(sol,capacity):
 		neighbor.no_carried_items.append(temp_item_1)
 
 	return neighbor
-
 
 def neighborhood_operator(solution, capacity,epsilon):
 	'''
