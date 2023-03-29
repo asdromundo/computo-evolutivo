@@ -147,6 +147,47 @@ def neighborhood_operator(solution, capacity,epsilon):
 	return best_neighbor  
 
 
+def best_of_all_neighbor(solution,capacity):
+	'''
+	Funcion para considerar al mejor vecino dado una vecindad 
+
+	Args: 
+	solution : Solution 
+		Solucion que evaluar 
+
+	Returns : 
+	best_neighbor : Solution 
+		Mejor vecino de la vecindad 
+	'''
+
+	neighborhood = []
+
+	if(solution.get_weight() < capacity):
+		#Esta lista es AGREGANDO items ya que la capacidad no ha sido excedida
+		for item in solution.no_carried_items:
+			tem_sc = solution.carried_items+[item]
+			temp_snc = [it for it in solution.no_carried_items if it != item] 
+			neighborhood.append(Solution(tem_sc, temp_snc))
+	else : 
+		#Si no, entonces hay que swapear un elemento random de la solucion 
+		#Obtenemos el elemento a swapear en la funcion 
+		swap_item = rnd.choice(solution.carried_items)
+		#Generamos la vecindad cambiando ese elemento 
+		for item in solution.no_carried_items:
+			tem_sc = [it for it in solution.carried_items+[item] if it != swap_item]
+
+			temp_snc = [it for it in solution.no_carried_items+[swap_item] if it != item]
+
+			neighborhood.append(Solution(tem_sc, temp_snc))
+
+
+	best_sol = neighborhood[0] 
+
+	for neighbor in neighborhood:
+		if neighbor.fitness_value < best_sol.fitness_value : 
+			best_sol = neighbor
+
+	return neighbor
 
 
 

@@ -17,7 +17,9 @@ def hill_climbing(solution, iterations, capacity):
 	current_sol = solution
 	for i in range(iterations):
 		
-		best_neighbor = kp.neighborhood_operator(current_sol, capacity,7)
+		#best_neighbor = kp.neighborhood_operator(current_sol, capacity,7)
+		best_neighbor = kp.best_of_all_neighbor(current_sol,capacity)
+
 		if best_neighbor.fitness_value > current_sol.fitness_value:
 			#Entonces ya no se puede mejorar 
 			break 

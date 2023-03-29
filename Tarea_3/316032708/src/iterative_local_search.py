@@ -1,12 +1,13 @@
 import math  
 import random as rnd  
 from copy import deepcopy
+import numpy as np
 
 import knapsack as kp 
 import hill_climbing as hc 
 
 
-def iterative_local_search(data,iterations,capacity,mode,eta,t):
+def iterative_local_search(data,iterations,hill_iterations,capacity,mode,eta,t):
 	'''
 	Implementacion de busqueda local iterativa 
 
@@ -30,49 +31,49 @@ def iterative_local_search(data,iterations,capacity,mode,eta,t):
 	#Generamos la solucion iniicial de forma aleatoria 
 	first_sol = kp.generate_random_sol(data)
 	#Primera solucion con optimizacion local 
-	s_hc = hc.hill_climbing(first_sol, 3000, capacity)
+	s_hc = hc.hill_climbing(first_sol, hill_iterations, capacity)
 
 	s_best = s_hc
 	#Historial para la perturbacion por frecuencia 
 	record = []
 
+	#Listas para visualizacion
+	iter_data = np.array([0 for i in range(iterations)])
+	fitness_data = np.array([0 for i in range(iterations)])
 
+	#Temperatura inicial 
 	temperature = t 
 
 	if(mode > 1 or mode < 0):
 		mode = 1
 
-	#Condicional para determinar qué perturbacion utilizar 
-	if(mode == 1):
-		#Entonces utilizamos perturbacion por frecuencia 
-		record = [0 for i in range(len(first_sol.carried_items)+ len(first_sol.no_carried_items))]
-		for i in range(iterations):
+	#Historial para la perturbacion por frecuencia 
+	record = [0 for i in range(len(first_sol.carried_items)+ len(first_sol.no_carried_items))]
+
+	s_p = None 
+	for i in range(iterations):
+		if mode == 1: 
 			s_p = frecuency_perturbation(s_best,record,eta)
-			s_hc_p = hc.hill_climbing(s_p,3000,capacity)
-
-			if s_hc_p.fitness_value < s_best.fitness_value:
-				s_best = s_hc_p
-			#Criterio de aceptacion usando temperatura 
-			elif rnd.uniform(0,1) < prob(s_best,s_hc_p,t):
-				s_best = s_hc_p
-
-			t = slow_cooling_schema(t,0.01)
-
-		print(record)		
-	else : 
-		for i in range(iterations):
+		else : 
 			s_p = random_perturbation(s_best,eta)
-			s_hc_p = hc.hill_climbing(s_p,3000,capacity)
+		
+		s_hc_p = hc.hill_climbing(s_p,hill_iterations,capacity)
 
-			if s_hc_p.fitness_value < s_best.fitness_value:
+		if s_hc_p.fitness_value <= s_best.fitness_value:
+				
+				s_best = s_hc_p		
+		elif  prob(s_best,s_hc_p,t) < rnd.uniform(0,1):
+				
 				s_best = s_hc_p
-			#Criterio de aceptacion usando temperatura 
-			elif rnd.uniform(0,1) < prob(s_best,s_hc_p,t):
-				s_best = s_hc_p
 
-			t = slow_cooling_schema(t,0.01)
+		t = slow_cooling_schema(t,0.05)
 
-	return s_best 
+		#Guardamos los datos 
+		iter_data[i] = i 
+		fitness_data[i] = s_best.fitness_value	
+	
+
+	return s_best, fitness_data, iter_data 
 
 def prob(current_sol,next_sol,temperature):
     '''
@@ -84,7 +85,7 @@ def prob(current_sol,next_sol,temperature):
         proba : float 
 		proabilidad de ser aceptada  
 	'''    
-    return math.pow( math.e, -( next_sol.fitness_value - (current_sol.fitness_value/temperature)))
+    return math.pow( math.e, - (( next_sol.fitness_value - current_sol.fitness_value)/temperature)) 
 
 def slow_cooling_schema(temperature,cooling_beta):
 	'''
@@ -93,8 +94,6 @@ def slow_cooling_schema(temperature,cooling_beta):
 	# T = T / (1 + betha * T)
 	# betha : 0.001, 0.005, 0.01
 	return temperature / 1+ cooling_beta*temperature
-
-
 
 def random_perturbation(best_sol, strong):
 	'''
@@ -210,7 +209,6 @@ def many_swaps(list_one, list_two, indices):
 	temp_elements_1 = [list_one[index] for index in indices]
 
 	#Obtenemos los elementos de la segunda lista de forma aleatoria
-	#Aqui no hemos considerado que pasa si la lista de items que no son cargados no tiene suficientes elementos 
 	temp_elements_2 = rnd.sample(list_two, len(indices))
 
 	#Removemos los elementos
