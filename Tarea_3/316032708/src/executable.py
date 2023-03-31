@@ -24,9 +24,71 @@ def draw_graph_pertubations_comparations(name, eta,  data_1, data_2, size,best):
     plt.show()
 
 def generate_avg_evol(data,iterations,hill_iterations,c,eta,temp,repetitions):
-    sol, fitness_data, iter_data, avg_data = ils.iterative_local_search(data,iterations,hill_iterations,c,0,eta,temp,repetitions)
-    sol, fitness_data, iter_data, avg_data = ils.iterative_local_search(data,iterations,hill_iterations,c,1,eta,temp,repetitions)
 
+    #Para la perturbacion aleatoria 
+    avg_fitness_rand = [] ## Aqui vamos a guardar cada arreglo de evolucion de fitness 
+    avg_evol_rand = [] ## Aqui guardamos las tuplas [iter_fraccion, fitness_in_that_moment]
+    avg_iters_rand = [] 
+    bests_rand= [] ##Todas las soluciones
+
+    #Para la perturbacion por frecuencias 
+    avg_fitness_frec = [] ## Aqui vamos a guardar cada arreglo de evolucion de fitness 
+    avg_evol_frec = [] ## Aqui guardamos las tuplas [iter_fraccion, fitness_in_that_moment]
+    avg_iters_frec = [] 
+    bests_frec= [] ##Todas las soluciones 
+
+    for i in range(repetitions):
+        
+        sol, fitness_data, iter_data, avg_data = ils.iterative_local_search(data,iterations,hill_iterations,c,0,eta,temp)
+        
+        avg_fitness_rand.append(fitness_data)####
+        avg_evol_rand.append(avg_data)#
+        avg_iters_rand.append(iter_data)
+        bests_rand.append(sol)
+
+        sol_f, fitness_data_f, iter_data_f, avg_data_f = ils.iterative_local_search(data,iterations,hill_iterations,c,1,eta,temp)
+
+        avg_fitness_frec.append(fitness_data_f)
+        avg_evol_frec.append(avg_data_f)#
+        avg_iters_frec.append(iter_data_f)
+        bests_frec.append(sol_f)
+
+
+    #PARA PERTURBACION ALEATORIA 
+    #Tenemos que graficar los datos promedios 
+    avr_evol_fit_data_r = []
+    for i in range(len(avg_evol_rand[0])):
+        avr_evol_fit_data_r.append([d[i][1] for d in avg_evol_rand])
+        
+    avr_evol_fit_total_r = []
+    for arr in avr_evol_fit_data_r :
+        avr_evol_fit_total_r.append(sum(arr)/len(arr))
+
+    #Obtenemos las iteraciones 
+    avr_evol_iter_total_r = [x[0] for x in avg_evol_rand[0]]
+   
+
+    #PARA PERTURBACION POR FRECUENCIAS 
+    avr_evol_fit_data_f = []
+    for i in range(len(avg_evol_frec[0])):
+        avr_evol_fit_data_f.append([d[i][1] for d in avg_evol_frec])
+        
+    avr_evol_fit_total_f = []
+    for arr in avr_evol_fit_data_f :
+        avr_evol_fit_total_f.append(sum(arr)/len(arr))
+
+    #Obtenemos las iteraciones 
+    avr_evol_iter_total_f = [x[0] for x in avg_evol_frec[0]]
+    
+
+
+
+
+    plt.plot(avr_evol_iter_total_r,avr_evol_fit_total_r,marker= 'o')
+    plt.plot(avr_evol_iter_total_f,avr_evol_fit_total_f,marker= '*')
+    
+    plt.show()
+    
 
 
 
@@ -84,16 +146,16 @@ if __name__ == '__main__':
     data = [[ids[i], vals[i], ws[i]] for i in range(len(ids))]
     
 
-    sol, fitness_data, iter_data, avg_evol = ils.iterative_local_search(data,iterations,hill_iterations,c,0,eta,10)
-    print(avg_evol)
-    sol_1, fitness_data_1, iter_data_1, avg_evol_1 = ils.iterative_local_search(data,iterations,hill_iterations,c,1,eta,10)
-    print(avg_evol_1)
+    #sol, fitness_data, iter_data, avg_evol = ils.iterative_local_search(data,iterations,hill_iterations,c,0,eta,10)
+    #print(avg_evol)
+    #sol_1, fitness_data_1, iter_data_1, avg_evol_1 = ils.iterative_local_search(data,iterations,hill_iterations,c,1,eta,10)
+    #print(avg_evol_1)
     #print(">>>>>>>>------------<<<<<<<<<<<")
     #print(sol)
 
-    draw_graph_pertubations_comparations(paths[int(sys.argv[1])], eta, [iter_data,fitness_data],[iter_data_1,fitness_data_1],n,[sol.fitness_value, sol_1.fitness_value])
+    #draw_graph_pertubations_comparations(paths[int(sys.argv[1])], eta, [iter_data,fitness_data],[iter_data_1,fitness_data_1],n,[sol.fitness_value, sol_1.fitness_value])
 
-    
+    generate_avg_evol(data,200,50,c,eta,10,30)
 
     
     

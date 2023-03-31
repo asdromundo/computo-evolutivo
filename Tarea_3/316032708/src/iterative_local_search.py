@@ -81,9 +81,8 @@ def iterative_local_search(data,iterations,hill_iterations,capacity,mode,eta,t):
 		
 		#Cada iteraciones/part vamos a recabar la mejor solucion 
 		if i == int(iterations*n_sections):
-			average_iter = average_iter+1
 			n_sections = n_sections+section
-			average_evolution.append([average_iter, s_best.fitness_value])
+			average_evolution.append([int(iterations*n_sections),s_best.fitness_value])
 			
 
 	#Tenemos que regresar tambien un arreglo de tuplas [(iteracion, mejor_resultado)]
