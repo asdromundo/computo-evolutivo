@@ -41,6 +41,13 @@ def iterative_local_search(data,iterations,hill_iterations,capacity,mode,eta,t):
 	iter_data = np.array([0 for i in range(iterations)])
 	fitness_data = np.array([0 for i in range(iterations)])
 
+	#Datos para evolucion promedio
+	#Cada iteraciones/n veces guardamos el valor 
+	n_sections = .05
+	section = n_sections
+	average_iter = 0 
+	average_evolution = []
+
 	#Temperatura inicial 
 	temperature = t 
 
@@ -71,9 +78,16 @@ def iterative_local_search(data,iterations,hill_iterations,capacity,mode,eta,t):
 		#Guardamos los datos 
 		iter_data[i] = i 
 		fitness_data[i] = s_best.fitness_value	
-	
+		
+		#Cada iteraciones/part vamos a recabar la mejor solucion 
+		if i == int(iterations*n_sections):
+			average_iter = average_iter+1
+			n_sections = n_sections+section
+			average_evolution.append([average_iter, s_best.fitness_value])
+			
 
-	return s_best, fitness_data, iter_data 
+	#Tenemos que regresar tambien un arreglo de tuplas [(iteracion, mejor_resultado)]
+	return s_best, fitness_data, iter_data, average_evolution 
 
 def prob(current_sol,next_sol,temperature):
     '''
