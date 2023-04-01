@@ -23,7 +23,7 @@ def draw_graph_pertubations_comparations(name, eta,  data_1, data_2, size,best):
     plt.legend(['Random Perturbation', 'Frecuency Perturbation'])
     plt.show()
 
-def generate_avg_evol(data,iterations,hill_iterations,c,eta,temp,repetitions):
+def generate_avg_evol(data,iterations,hill_iterations,c,eta,temp,repetitions, w_one_path, w_best_path):
 
     #Para la perturbacion aleatoria 
     avg_fitness_rand = [] ## Aqui vamos a guardar cada arreglo de evolucion de fitness 
@@ -81,20 +81,33 @@ def generate_avg_evol(data,iterations,hill_iterations,c,eta,temp,repetitions):
     avr_evol_iter_total_f = [x[0] for x in avg_evol_frec[0]]
     
 
+   
+    #Ahora tenemos que obtener al mejor, el promedio, el peor y la desviacion estandar de esas 30 iteraciones
+    data_from_best_rand = [s.fitness_value for s in bests_rand]
 
+    #Encontramos a la mejor 
+    best_random_sol = bests_rand[0]
+    for sol in bests_rand:
+        if sol.fitness_value <= best_random_sol.fitness_value:
+            best_random_sol = sol 
 
+    #Escribimos la mejor  
+    kr.write_knapsack_file(w_one_path, [str(best_random_sol)])
 
+    #Guardamos el los arreglos con los mejores valores 
+    kr.write_knapsack_file(w_best_path, [str(data_from_best_rand)])        
+
+    #plt.show()
+    df_r = pd.DataFrame({"Fitness" : data_from_best_rand})
+    #print(df_r["Fitness"].std())
+    print(df_r.describe())
+
+    
     plt.plot(avr_evol_iter_total_r,avr_evol_fit_total_r,marker= 'o')
     plt.plot(avr_evol_iter_total_f,avr_evol_fit_total_f,marker= '*')
     
     plt.show()
     
-
-
-
-
-
-
 
 
 if __name__ == '__main__': 
@@ -107,11 +120,17 @@ if __name__ == '__main__':
               '/data/eje2n1000.txt', # 3
               '/data/n_1000_c_1000000_g_6_f_0.3_eps_0.001_s_100.txt']#4
 
-    w_paths = ['/output/ejeL14n45.txt', # 0
-             '/output/ejeknapPI_3_200_1000_14.txt', # 1 
-              '/output/eje1n1000.txt', # 2
-              '/output/eje2n1000.txt', # 3
-              '/output/n_1000_c_1000000_g_6_f_0.3_eps_0.001_s_100.txt']#4
+    w_paths_one_sol = ['/output/ejeL14n45.txt', # 0
+                        '/output/ejeknapPI_3_200_1000_14.txt', # 1 
+                        '/output/eje1n1000.txt', # 2
+                        '/output/eje2n1000.txt', # 3
+                        '/output/n_1000_c_1000000_g_6_f_0.3_eps_0.001_s_100.txt']#4
+
+    w_paths_best_sols = ['/output/best_sols/bs_ejeL14n45.txt', # 0
+                        '/output/best_sols/bs_ejeknapPI_3_200_1000_14.txt', # 1 
+                        '/output/best_sols/bs_eje1n1000.txt', # 2
+                        '/output/best_sols/bs_eje2n1000.txt', # 3
+                        '/output/best_sols/bs_n_1000_c_1000000_g_6_f_0.3_eps_0.001_s_100.txt']#4
 
     
     
@@ -126,12 +145,18 @@ if __name__ == '__main__':
     #Se indica que ejemplar leer 
     n, c, ids, vals, ws = dic_exemplars[int(sys.argv[1])]
     
-    #Se indica el archivo para guardar la solucion 
+    #Se indica el archivo para guardar la mejor solucion encontrada  
+    w_paths_one_sol = w_paths_one_sol[int(sys.argv[1])]
+
+    #Se indica el archivo para guardar los valores de las mejores soluciones encontradas en x repeticiones
+    w_paths_best_sols = w_paths_best_sols[int(sys.argv[1])]
+
     #kr.write_knapsack_file(w_paths[int(sys.argv[1])], w_data)
 
-    #Se indica cuantas iteraciones 
+    #Se indica cuantas iteraciones para ILS 
     iterations  = int(sys.argv[2])
 
+    #Se indica cuantas iteraciones para Hill Climbing
     hill_iterations = int(sys.argv[3])
 
     #Se indica que perturbacion utilizar 
@@ -155,7 +180,7 @@ if __name__ == '__main__':
 
     #draw_graph_pertubations_comparations(paths[int(sys.argv[1])], eta, [iter_data,fitness_data],[iter_data_1,fitness_data_1],n,[sol.fitness_value, sol_1.fitness_value])
 
-    generate_avg_evol(data,200,50,c,eta,10,30)
+    generate_avg_evol(data,200,50,c,eta,10,30,w_paths_one_sol,w_paths_best_sols)
 
     
     
