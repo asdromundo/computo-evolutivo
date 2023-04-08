@@ -60,6 +60,35 @@ def read_knapsack_file(relative_path):
 
     return [n,c,id_arr,p_arr,w_arr]
 
+def read_sample_data(relative_path):
+    '''
+    Esta funcion recibe la ruta del archivo en donde se guardan las mejores soluciones 
+    despues de realizar 30 repeticiones de iterative local search, este archivo contiene 
+    una cadena que representa un arreglo de muestras por cada estrategia de perturbacion, 
+    para la tarea 3 solo tenemos dos arreglos, el de perturbacion aleatoria y perturbacion 
+    por frecuencias.
+
+    Args : 
+        
+    relative_path : string 
+        Ruta relativa del archivo a leer
+
+    Returns 
+
+    samples : list : list : int
+        Una lista con las muestras de cada estrategia de perturbacion 
+
+    '''
+    path = os.getcwd()+relative_path
+    samples = []
+
+    with open(path) as f:
+        for line in f:
+            samples.append(eval(line))
+
+    return samples  
+
+
 def write_knapsack_file(relative_path, data):
     '''
     Args: 
@@ -76,3 +105,4 @@ def write_knapsack_file(relative_path, data):
     with open(path,'w') as f:
         for da in data: 
             f.writelines(da)
+
