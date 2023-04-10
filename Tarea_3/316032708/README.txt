@@ -6,7 +6,7 @@ Bibliotecas utilizadas :
         - pandas 
         - numpy
         - matplotlib
-
+        - scipy
 
 Instrucciones para PANDA :
 MINICONDA 
@@ -45,6 +45,13 @@ Se intstala tanto con pip como con miniconda :
 
     conda install -c conda-forge matplotlib
 
+Instrucciones para SCIPY 
+Se instala con pip : 
+
+    pip install scipy
+
+
+
 
 Ejecucion del programa : 
 
@@ -76,6 +83,12 @@ Ejemplo :
 es usando el ejemplar "ejeL14n45.txt (0)" , con 1000 iteraciones para búsqueda local iterativa, con 500 iteraciones para hill climbing, usando la estrategia de perturbacion aleatoria (0) y con fuerza de perturbacion .4  
 
 Es IMPORTANTE resaltar, que NO SE PASA como parámetro el nombre del archivo para guardar la mejor solución encontrada ya que el nombre del archivo de salida tiene el mismo nombre que el archivo de data, sólo que éste se encuentra en la carpeta output/. Por ejemplo, para el anterior ejemplar "ejeL14n45.txt" el archivo donde se guarda la mejor solución encontrada es "output/ejeL14n45.txt". 
+
+Adicionalmente en el script excecutable.py se encuentran algunas lineas comentadas que permiten la visualizacion de datos. 
+
+ACERCA DE LA CARPETA OUTPUT : 
+
+La carpeta 316032708/output contiene un archivo .txt por cada ejemplar en la carpeta 316032708/data, cada uno de estos archivos contiene informacion sobre la mejor solucion encontrada en una ejecucion del algoritmo ILS (tipicamente 1000 iteraciones para ils y 500 para hill climbing). En la carpeta 316032708/output/best_sols se encuentran (por cada ejemplar) los mejores valores objetivos encontrados en 10 repeticiones del algoritmos ILS usando ambas estrategias y fuerza de perturbacion .4, estos datos son los que se utilizaron para la visualizacion en las graficas y pueden ser generados de nuevo por medio de la funcion src/excecutable.py -> generate_avg_evol. 
 
 
 

@@ -27,6 +27,11 @@ def iterative_local_search(data,iterations,hill_iterations,capacity,mode,eta,t):
 	Returns: 
 	s_best : Solution 
 		La mejor solucion encontrada 
+
+#FALTA ESPECIFICAR VALORES DE RERESO
+
+
+
 	'''	
 	#Generamos la solucion iniicial de forma aleatoria 
 	first_sol = kp.generate_random_sol(data)

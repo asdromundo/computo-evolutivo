@@ -86,6 +86,7 @@ def generate_avg_evol(data,iterations,hill_iterations,c,eta,temp,repetitions, w_
         avg_iters_frec.append(iter_data_f)
         bests_frec.append(sol_f)
 
+        print("{} Repetition COMPLETED".format(i))
 
     #PARA PERTURBACION ALEATORIA 
     #Tenemos que graficar los datos promedios 
@@ -140,7 +141,6 @@ def generate_avg_evol(data,iterations,hill_iterations,c,eta,temp,repetitions, w_
     #y las graficas boxplot 
     kr.write_knapsack_file(w_best_path, [str(data_from_best_rand),"\n",str(data_from_best_frec)])        
 
-    #plt.title("Nombre : {} \nTamanio ejemplar : {} \nFuerza de Perturbacion : {} \n# Iteraciones Hill Climbing : {} \n# Iteraciones ILS : {}".format(instance_name, eta,hill_iterations.iterations), loc = 'left')
     plt.title("Nombre : {} \nFuerza de Perturbacion : {}".format(instance_name,eta), loc = 'left')
     plt.xlabel("iterations")
     plt.ylabel("Fitness")
@@ -201,20 +201,20 @@ def hypothesis_testing(sample_1,sample_2):
     value  = 0.05
 
     if (stats.shapiro(sample_1).pvalue > value  and  stats.shapiro(sample_2).pvalue > value):
-        print("PASO SHAPIRO")
+        #print("PASO SHAPIRO")
         #Pasamos el primer filtro, por lo que aplicamos Levene 
         stat, p = levene(sample_1, sample_2)
         if(p > value):
-            print("PASO LEVENE")
+            #print("PASO LEVENE")
             #Entonces pasamos a ANOVA 
             if(f_oneway(sample_1,sample_2).pvalue > value):
-                print("PASO ANOVA") 
+                #print("PASO ANOVA") 
                 #Entonces tienen la misma distribucion, por lo que no podemos concluir nada 
                 return -1
             else : 
                 return determine(sample_1,sample_2)
         else : #Usamos welch 
-            print("NO PASO LEVENE, PROCEDE A WELCH")
+            #print("NO PASO LEVENE, PROCEDE A WELCH")
             if(stats.ttest_ind(random_sample ,frecuency_sample , equal_var = False).pvalue > value):
                 #Entonces tienen la misma distribucion, por lo que no podemos concluir nada 
                 return -1
@@ -222,7 +222,7 @@ def hypothesis_testing(sample_1,sample_2):
                 return determine(sample_1,sample_2)
 
     else : #Si no cumple, realizamos la prueba de Kruskall -wells 
-        print("NO PASO SHAPIRO, PROCEDE A KRUSKALL")
+        #print("NO PASO SHAPIRO, PROCEDE A KRUSKALL")
         if (stats.kruskal(sample_1,sample_2).pvalue > value) :
             #Entonces tienen la misma distribucion, por lo que no podemos concluir nada 
             return -1 
@@ -230,6 +230,26 @@ def hypothesis_testing(sample_1,sample_2):
             #Determinamos quien tiene mayor promedio 
             return determine(sample_1,sample_2)
             
+
+def comparation(n_comparations, sample_1, sample_2):
+
+    #Contadores para ambos samples
+    # Indice 0 para ejemplar 1 e indice 1 para ejemplar 2 
+    conts = [0,0]
+    for i in range(n_comparations):
+        #Como hypothesis_testing regresa 0 o 1, aumentamos el contador respectivo 
+        conts[hypothesis_testing(sample_1,sample_2)] = conts[hypothesis_testing(sample_1,sample_2)]+1 
+
+    #A este punto ya guardamos cuantas veces fue bueno cada muestra correspondiente a los dos ejemplares 
+    best = conts.index(max(conts)) # 0 : el mejor fue para la muestra 1, de lo contrario 1 : muestra 2 
+    #Cuantas veces fue el mejor : 
+    c_best = conts[best]
+    c_worst = n_comparations - c_best
+
+    #Regresamos [mejor estrategia segun las pruebas de hipotesis, proporcion en que esa estrategia fue mejor, proporcion en que la estrategia fue peor]
+    return best, 100*c_best/n_comparations, 100*c_worst/n_comparations
+    #Necesitamos regresar en que proporcion fue el mejor, por lo que el total es n_comparations
+
 
 def determine(sample_1, sample_2):
 
@@ -243,7 +263,7 @@ def determine(sample_1, sample_2):
     sample_2 : list : int 
         Las muestras de los mejores resultados 
     Returs: 
-        1, 2 : 1 si sample_1 tiene el menor promedio, en otro caso regresa sample_2  
+        0, 1 : 0 si sample_1 tiene el menor promedio, en otro caso regresa 1  
 
     '''
     mean_1 = sum(sample_1)/len(sample_1)
@@ -251,14 +271,17 @@ def determine(sample_1, sample_2):
 
     #Como nuestra funcion de evaluacion es de minimizacion, entonces debemos considerar el de menor promedio 
     if min(mean_1,mean_2) == mean_1 :
-            return 1 
+            return 0 
     else : 
-            return 2 
+            return 1 
 
 
 
 if __name__ == '__main__': 
+    '''
+    Funcion main, en donde se realiza la lectura y escritura de archivos asi como la ejecucion del algoritmo ILS 
 
+    '''
     
 
     paths = ['/data/ejeL14n45.txt', # 0
@@ -318,16 +341,31 @@ if __name__ == '__main__':
     data = [[ids[i], vals[i], ws[i]] for i in range(len(ids))]
 
 
-    generate_avg_evol(data,iterations,hill_iterations,c,eta,20,30, w_paths_one_sol, w_paths_best_sols,paths[int(sys.argv[1])])
+    #s_best, fitnestt_d, iter_d, avg_evol = ils.iterative_local_search(data,iterations,hill_iterations,c,0,eta,20)
+    #s_best_1, fitnestt_d_1, iter_d_1, avg_evol_1 = ils.iterative_local_search(data,iterations,hill_iterations,c,1,eta,20)
+    
+    
+    #draw_graph_pertubations_comparations(w_paths_one_sol, eta, [iter_d,fitnestt_d], [iter_d_1,fitnestt_d_1],n,[s_best.fitness_value,s_best_1.fitness_value])
 
-    samples = kr.read_sample_data(w_paths_best_sols)
-    random_sample = samples[0]
-    frecuency_sample = samples[1]
 
+    #Para evolucion promedio : 
+    #generate_avg_evol(data,iterations,hill_iterations,c,eta,20,10, w_paths_one_sol, w_paths_best_sols,paths[int(sys.argv[1])])
+
+
+    #Se leen los mejores resultados depues de ejecutar ITS 10 veces 
+    #samples = kr.read_sample_data(w_paths_best_sols)
+    #Se almacenan las muestras de esas 10 veces 
+    #random_sample = samples[0]
+    #frecuency_sample = samples[1]
+
+    #Datos estadisticos : 
     #stadistic_data(random_sample,frecuency_sample)
 
+    #Para mostrar la grafica de boxplot : 
     #boxplot(random_sample,frecuency_sample)
 
+
+    #Para obtener los resultados de las pruebas de hipotesis : 
+    #best, b_p, w_p = comparation(10,random_sample,frecuency_sample)
     
     
-     
