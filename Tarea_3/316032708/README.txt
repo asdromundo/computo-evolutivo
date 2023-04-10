@@ -80,7 +80,8 @@ Donde
 Ejemplo : 
 
     python3 src/executable.py 0 1000 5000 0 .4  -> 
-es usando el ejemplar "ejeL14n45.txt (0)" , con 1000 iteraciones para búsqueda local iterativa, con 500 iteraciones para hill climbing, usando la estrategia de perturbacion aleatoria (0) y con fuerza de perturbacion .4  
+es usando el ejemplar "ejeL14n45.txt (0)" , con 1000 iteraciones para búsqueda local iterativa, con 500 iteraciones para hill climbing, usando la estrategia de perturbacion aleatoria (0) y con fuerza de perturbacion .4 
+Por defecto la temperatura establecida para el criterio de aceptacion es de 20 
 
 Es IMPORTANTE resaltar, que NO SE PASA como parámetro el nombre del archivo para guardar la mejor solución encontrada ya que el nombre del archivo de salida tiene el mismo nombre que el archivo de data, sólo que éste se encuentra en la carpeta output/. Por ejemplo, para el anterior ejemplar "ejeL14n45.txt" el archivo donde se guarda la mejor solución encontrada es "output/ejeL14n45.txt". 
 

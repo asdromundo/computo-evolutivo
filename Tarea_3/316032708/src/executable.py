@@ -341,10 +341,11 @@ if __name__ == '__main__':
     data = [[ids[i], vals[i], ws[i]] for i in range(len(ids))]
 
 
-    #s_best, fitnestt_d, iter_d, avg_evol = ils.iterative_local_search(data,iterations,hill_iterations,c,0,eta,20)
+    s_best, fitnestt_d, iter_d, avg_evol = ils.iterative_local_search(data,iterations,hill_iterations,c,0,eta,20)
+    print(s_best)
     #s_best_1, fitnestt_d_1, iter_d_1, avg_evol_1 = ils.iterative_local_search(data,iterations,hill_iterations,c,1,eta,20)
     
-    
+
     #draw_graph_pertubations_comparations(w_paths_one_sol, eta, [iter_d,fitnestt_d], [iter_d_1,fitnestt_d_1],n,[s_best.fitness_value,s_best_1.fitness_value])
 
 
