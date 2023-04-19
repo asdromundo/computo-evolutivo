@@ -170,6 +170,15 @@ def stadistic_data(sample_1,sample_2):
 
     pass 
 
+def min_max(sample_1,sample_2):
+
+    print("Min samp 1 : {}".format(str(min(sample_1))))
+    print("Max samp 1 : {}".format(str(max(sample_1))))
+    print("Min samp 2 : {}".format(str(min(sample_2))))
+    print("Max samp 2 : {}".format(str(max(sample_2))))
+
+
+
 def boxplot(sample_1,sample_2):
     '''
     Generacion de la grafica boxplot para las muestras 
@@ -341,7 +350,7 @@ if __name__ == '__main__':
     data = [[ids[i], vals[i], ws[i]] for i in range(len(ids))]
 
 
-    s_best, fitnestt_d, iter_d, avg_evol = ils.iterative_local_search(data,iterations,hill_iterations,c,0,eta,20)
+    s_best, fitnestt_d, iter_d, avg_evol = ils.iterative_local_search(data,iterations,hill_iterations,c,mode_perturbation,eta,20)
     print(s_best)
     #s_best_1, fitnestt_d_1, iter_d_1, avg_evol_1 = ils.iterative_local_search(data,iterations,hill_iterations,c,1,eta,20)
     
@@ -358,7 +367,7 @@ if __name__ == '__main__':
     #Se almacenan las muestras de esas 10 veces 
     #random_sample = samples[0]
     #frecuency_sample = samples[1]
-
+    #min_max(random_sample,frecuency_sample)
     #Datos estadisticos : 
     #stadistic_data(random_sample,frecuency_sample)
 
