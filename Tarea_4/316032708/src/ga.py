@@ -14,43 +14,32 @@ class GeneticAlg:
 	queens : int 
 		Number of the n-queen problem
 	pop_size : int 
-		Size of the population 
-	sel_prob : float  //Esto aun no se determina por que todos los individuos tienen la misma proba de ser seleccionados
-		Probability of select a individual from the population 
+		Size of the population
+	current_pop : list :  Queen_Solution
+		The current population of the current iteration 
+	offspring : list :  Queen_Solution
+		The next generation of individuals 
+	sel_proportion : float  
+		Proportion of the population to be selected by roullete selection, the rest is selected by elitism
+		We setted between (.6 , .8)  
 	cross_prob : float 
-		Probability of crossover  
+		Probability of crossover  (.8 , .9)
 	mut_prob : float 
-		Probability of select a individual from the population in order to be mutated 
-
-
-
-	'''
-
-
-
-	'''
-	Él proseso es : 
-	Inicializamos nuestra poblacion (de forma aleatoria) de tamaño N
-
-	Vamos a determinar cuantos vamos a seleccionar por metodo de ruleta y cuantos por elitismo
-	Si vamos a realizar K selecciones, entonces vamos a elegir N-K individuos de forma aleatoria 
-	
-	A esos K seleccionados les vamos a aplicar cruza , entonces tenemos que hacer parejas y a esas parejas 
-	usamos la probabilidad de cruza para determinar si se cruzan o no, si no se cruzan entonces los regresamos como estaban
-	Por lo que obtenemos K_1 individuos de la siguiente generacion 
-
-	A esos K_1 individuos les vamos intentar aplicar mutacion 
-
+		Probability of select a individual from the population in order to be mutated (.1 , .2)
 	'''
 
 	def __init__(self, n_q, pop_s, p_sel,cross_p, mut_p):
 
 		self.n_queens = n_q 
 		self.pop_size = pop_s
-		self.current_pop = []
+		self.current_pop = np.array([])
+		#self.offspring = np.array([])
 		self.sel_proportion = p_sel
 		self.cross_prob = cross_p
 		self.mut_prob = mut_p
+
+	def get_the_best(self):
+		return sorted(self.current_pop, key = lambda solution : -solution.fitness)[0]		
 
 	def show_pop(self):
 		for ind in self.current_pop:
@@ -67,12 +56,10 @@ class GeneticAlg:
 			init_pop.append(qrep.Queen_Solution(np.random.permutation(self.n_queens)))
 
 
-		self.current_pop=init_pop
+		self.current_pop=np.array(init_pop)
 		[ind.evaluate() for ind in self.current_pop]
 
 
-	#Para la seleccion por ruleta 
-	# muestra = random.choices(lista, weights=[lista de probabilidades para lista], k = tamanio de la muestra )
 	def selection_rl(self):
 		'''
 		Selection  by Roulette
@@ -90,25 +77,33 @@ class GeneticAlg:
 		probs = [ind.fitness/fit_sum for ind in self.current_pop]
 
 		#Selection by roulette
-		return rnd.choices(self.current_pop, weights=probs, k=int(self.pop_size*self.sel_proportion))
+		return np.array(rnd.choices(self.current_pop, weights=probs, k=int(self.pop_size*self.sel_proportion)))
 
 	def selection_elitism(self):
 
+		'''
+		Selection by elitism, select the first 1-sel_proportion individuals with the best fitness value 
+
+
+		Returns: 
+		elite : list : Queen_Solution
+			The best individuals of the current population 
+		'''
 		[ind.evaluate() for ind in self.current_pop]
-		return sorted(self.current_pop, key = lambda solution : -solution.fitness)[:self.pop_size-int(self.pop_size*self.sel_proportion)]		
+		return np.array(sorted(self.current_pop, key = lambda solution : -solution.fitness)[:self.pop_size-int(self.pop_size*self.sel_proportion)])		
 
 
 	def crossover(self, p_1, p_2):
 		'''
 		Crossover operator for permutations  
-
+	
+		Args: 
 		p1 : Queen_Solution
 			first parent
 		p2 : Queen_Solution
 			second parent 
 
 		Returns: 
-
 		s_1 : Queen_Solution
 			first son 
 		s_2 : Queen_Solution
@@ -123,8 +118,8 @@ class GeneticAlg:
 			ra = range(self.n_queens)
 
 			#Initialize the son's chromosomes
-			son_1_chromosome = [-1 for x in ra]
-			son_2_chromosome = [-1 for x in ra]
+			son_1_chromosome = np.array([-1 for x in ra])
+			son_2_chromosome = np.array([-1 for x in ra])
 
 			#Set the first parents information 
 			son_1_chromosome[cross_p_1:cross_p_2] = p_2.chromosome[cross_p_1:cross_p_2]
@@ -158,9 +153,31 @@ class GeneticAlg:
 		else:
 			return copy.deepcopy(p_1), copy.deepcopy(p_2)
 
+	def crossover_pop(self,population):
+		'''
+
+		*The population must be a even number 
+
+		'''
+		offspring = []
+		for i in range(0,len(population),2): 
+			s_1, s_2 = self.crossover(population[i],population[i+1])
+			offspring.append(s_1)
+			offspring.append(s_2)
+
+		return np.array(offspring)
+
+
 
 	def mutate_individual(self,individual):
-
+		'''
+		Mutate an individual by swapping two random elements within the chromosome
+		
+		Args:
+		individual : Queen_Solution
+			individual mutated
+		
+		'''
 		index_1, index_2 = rnd.sample(range(len(individual.chromosome)), 2)
 		individual.chromosome[index_1], individual.chromosome[index_2] = individual.chromosome[index_2],individual.chromosome[index_1] 
 
@@ -169,44 +186,40 @@ class GeneticAlg:
 	def mutation_simple(self):
 		'''
 		Mutation operator, for each individual check if the probability of mutation is less than a random 
-		float, if is then it swaps two random index of the individual chromosome 
+		float, if is then it execute the funtion "mutate_individual". 
+		The mutation only works when the offspring is ready (not empty)
 
 		'''
-		#for sol in self.current_pop:
+		for ind in self.current_pop:
+			if(rnd.random() < self.mut_prob):
+				self.mutate_individual(ind)
 
+	def execution(self):
 
-		pass
+		ga.init_population()
+
+		for i in range(1000):
+			#Primero tenemos que seleccionar usando ruleta
+			roulette_selected = self.selection_rl() 
+			#Luego hay que realizar el crossover 
+			roulette_offspring = self.crossover_pop(roulette_selected)
+			#Luego unimos el crossover con los mejores de elitismo
+			elite = self.selection_elitism() 
+			offspring = np.concatenate((roulette_offspring,elite),axis=0) 
+			self.current_pop = offspring
+			self.mutation_simple()
+			#Luego hacemos mutacion 
+
+		print(self.get_the_best())
+
 
 if __name__ == '__main__':
 
-	ga = GeneticAlg(20,10,.7,.8,.1)
-	ga.init_population()
-	for ind in ga.current_pop: 
-		print(ind)
-	print(">>>>>>>>>>>>")
-	thebest = ga.selection_elitism()
-	for ind in thebest:
-		print(ind)
+	ga = GeneticAlg(8,10,.8,.8,.1)
+	ga.execution()	
 	
-	print(">>>>>>>>>>>>>>>>MUTATION")
-	print(ga.current_pop[0])
-	print(">>>>>>>>>>>>>>>>>.MUTADO")
-	ind = ga.current_pop[0]
-	#len(ind)
-	ga.mutate_individual(ind)
-	ind.evaluate()
-	print(ind)
-	#ga.mutate_individual(ga.current_pop[0])
 
-
-	#print("Parents >>>>>>>>>>>>>>>>>>>>>")
-	#print(ga.current_pop[0])
-	#print(ga.current_pop[1])
-
-	#print("Sons >>>>>>>>>>>>>>>>>>>>>")
-	#son1, son2 = ga.crossover(ga.current_pop[0],ga.current_pop[1]) 
-	#print(son1)
-	#print(son2)	
+	
 
 
 

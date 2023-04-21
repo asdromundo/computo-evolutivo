@@ -23,7 +23,7 @@ class Queen_Solution:
 		# 
 
 	def __str__(self):
-		return "Chromosome : {}".format(str(self.chromosome))+"\n"+"Fitness Value : {}".format(self.fitness)+"\n"+"Board Representation :"+"\n"+str(self.set_board())
+		return "Chromosome : {}".format(str(self.chromosome))+"\n"+"Fitness Value : {}".format(self.fitness)+"\n"+"Best possible fitness: "+str(self.max_conflics)+"\n"+"Board Representation :"+"\n"+str(self.set_board())
 
 	def set_board(self): 
 		'''
