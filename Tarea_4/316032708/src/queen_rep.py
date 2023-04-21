@@ -16,7 +16,8 @@ class Queen_Solution:
 
 
 	def __init__(self, c):
-		self.chromosome = c 
+		self.chromosome = c
+		self.max_conflics = (len(c)*(len(c)-1))/2 
 		self.fitness = 0 
 		self.board_rep = [ ["--" for i in self.chromosome] for j in self.chromosome]
 		# 
@@ -51,5 +52,5 @@ class Queen_Solution:
 					if(abs(i-j) == abs(self.chromosome[i]-self.chromosome[j])):
 						conflicts=conflicts+1
 
-		self.fitness = conflicts/2
+		self.fitness = self.max_conflics-conflicts/2
 
