@@ -68,6 +68,7 @@ class GeneticAlg:
 
 
 		self.current_pop=init_pop
+		[ind.evaluate() for ind in self.current_pop]
 
 
 	#Para la seleccion por ruleta 
@@ -91,9 +92,15 @@ class GeneticAlg:
 		#Selection by roulette
 		return rnd.choices(self.current_pop, weights=probs, k=int(self.pop_size*self.sel_proportion))
 
+	def selection_elitism(self):
+
+		[ind.evaluate() for ind in self.current_pop]
+		return sorted(self.current_pop, key = lambda solution : -solution.fitness)[:self.pop_size-int(self.pop_size*self.sel_proportion)]		
+
+
 	def crossover(self, p_1, p_2):
 		'''
-		Crossover operator for permutations 
+		Crossover operator for permutations  
 
 		p1 : Queen_Solution
 			first parent
@@ -151,18 +158,55 @@ class GeneticAlg:
 		else:
 			return copy.deepcopy(p_1), copy.deepcopy(p_2)
 
+
+	def mutate_individual(self,individual):
+
+		index_1, index_2 = rnd.sample(range(len(individual.chromosome)), 2)
+		individual.chromosome[index_1], individual.chromosome[index_2] = individual.chromosome[index_2],individual.chromosome[index_1] 
+
+
+
+	def mutation_simple(self):
+		'''
+		Mutation operator, for each individual check if the probability of mutation is less than a random 
+		float, if is then it swaps two random index of the individual chromosome 
+
+		'''
+		#for sol in self.current_pop:
+
+
+		pass
+
 if __name__ == '__main__':
 
-	ga = GeneticAlg(8,10,.5,.8,.1)
+	ga = GeneticAlg(20,10,.7,.8,.1)
 	ga.init_population()
-	print("Parents >>>>>>>>>>>>>>>>>>>>>")
+	for ind in ga.current_pop: 
+		print(ind)
+	print(">>>>>>>>>>>>")
+	thebest = ga.selection_elitism()
+	for ind in thebest:
+		print(ind)
+	
+	print(">>>>>>>>>>>>>>>>MUTATION")
 	print(ga.current_pop[0])
-	print(ga.current_pop[1])
+	print(">>>>>>>>>>>>>>>>>.MUTADO")
+	ind = ga.current_pop[0]
+	#len(ind)
+	ga.mutate_individual(ind)
+	ind.evaluate()
+	print(ind)
+	#ga.mutate_individual(ga.current_pop[0])
 
-	print("Sons >>>>>>>>>>>>>>>>>>>>>")
-	son1, son2 = ga.crossover(ga.current_pop[0],ga.current_pop[1]) 
-	print(son1)
-	print(son2)	
+
+	#print("Parents >>>>>>>>>>>>>>>>>>>>>")
+	#print(ga.current_pop[0])
+	#print(ga.current_pop[1])
+
+	#print("Sons >>>>>>>>>>>>>>>>>>>>>")
+	#son1, son2 = ga.crossover(ga.current_pop[0],ga.current_pop[1]) 
+	#print(son1)
+	#print(son2)	
 
 
 
