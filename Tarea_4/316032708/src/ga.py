@@ -1,8 +1,11 @@
 
 import math 
 import numpy as np 
+import matplotlib.pyplot as plt
 import random as rnd 
 import copy
+import time as tm 
+import sys
 
 import queen_rep as qrep 
 
@@ -28,15 +31,17 @@ class GeneticAlg:
 		Probability of select a individual from the population in order to be mutated (.1 , .2)
 	'''
 
-	def __init__(self, n_q, pop_s, p_sel,cross_p, mut_p):
+	def __init__(self, n_q, pop_s, p_sel,cross_p, mut_p, t):
 
 		self.n_queens = n_q 
 		self.pop_size = pop_s
 		self.current_pop = np.array([])
 		#self.offspring = np.array([])
+		self.max_time = t  
 		self.sel_proportion = p_sel
 		self.cross_prob = cross_p
 		self.mut_prob = mut_p
+		self.optimal = (n_q*(n_q-1))/2
 
 	def get_the_best(self):
 		return sorted(self.current_pop, key = lambda solution : -solution.fitness)[0]		
@@ -196,9 +201,13 @@ class GeneticAlg:
 
 	def execution(self):
 
+		start = tm.time()
+		
+
+		total_iterations = 0 
 		ga.init_population()
 
-		for i in range(1000):
+		while(tm.time() < self.max_time or self.get_the_best().fitness != self.optimal):
 			#Primero tenemos que seleccionar usando ruleta
 			roulette_selected = self.selection_rl() 
 			#Luego hay que realizar el crossover 
@@ -208,15 +217,75 @@ class GeneticAlg:
 			offspring = np.concatenate((roulette_offspring,elite),axis=0) 
 			self.current_pop = offspring
 			self.mutation_simple()
+			total_iterations = total_iterations+1
 			#Luego hacemos mutacion 
 
+
 		print(self.get_the_best())
+		end = tm.time()
+		print("Tiempo total de ejecucion: "+str(end-start))
+		print("Total de iteraciones: "+str(total_iterations))
+
+
+	def visualize_board(self,arr):
+    # Tamaño del tablero
+	    n = len(arr)
+
+	    # Genera una matriz de ceros de tamaño n x n para representar el tablero
+	    tablero = np.zeros((n, n))
+
+	    # Marca las posiciones de las reinas en el tablero
+	    for i in range(n):
+	        fila = arr[i] - 1  # resta 1 ya que las filas se cuentan desde 1, pero los índices de la lista comienzan desde 0
+	        tablero[fila][i] = 1
+
+	    # Crea una figura y un eje
+	    fig, ax = plt.subplots(figsize=(8, 8))
+
+	    # Define el mapa de colores para el tablero
+	    cmap = plt.get_cmap('binary')
+	    cmap.set_bad(color='brown')
+	    cmap.set_over(color='yellow')
+	    cmap.set_under(color='gray')
+
+	    # Dibuja el tablero de ajedrez
+	    ax.imshow(tablero, cmap=cmap, extent=[-0.5, n-0.5, -0.5, n-0.5])
+
+	    # Dibuja las reinas
+	    for i in range(n):
+	        fila = arr[i] - 1
+	        ax.text(i, fila, '♛', ha='center', va='center', fontsize=30, color='black')
+
+	    # Configura los ejes
+	    ax.set_xticks(np.arange(n))
+	    ax.set_yticks(np.arange(n))
+	    ax.set_xticklabels(np.arange(1, n+1))
+	    ax.set_yticklabels(np.arange(1, n+1)[::-1])
+	    ax.tick_params(length=0)
+	    ax.grid(True)
+	    ax.set_aspect('equal')
+	    ax.set_title('Tablero de Ajedrez con Reinas', fontsize=20, fontweight='bold')
+
+	    # Muestra la figura
+	    plt.show()
+
 
 
 if __name__ == '__main__':
 
-	ga = GeneticAlg(8,10,.8,.8,.1)
+	#Vamos a recibir el numero de reinas 
+	#Vamos a recibir el tamanio de la poblacion 
+	#Vamos a recibir la probabilidad de cruza 
+	#Vamos a recibir la probabilidad de mutacion 
+	#Vamos a recibir el maximo tiempo de ejecucion 
+
+	number_q,popultation_size,prob_cross,prob_mut,time = int(sys.argv[1]),int(sys.argv[2]),float(sys.argv[3]),float(sys.argv[4]),int(sys.argv[5])
+
+	
+	ga = GeneticAlg(number_q,popultation_size,.8,prob_cross,prob_mut,time)
+	
 	ga.execution()	
+	ga.visualize_board(ga.get_the_best().chromosome)
 	
 
 	
