@@ -200,35 +200,44 @@ class GeneticAlg:
 				self.mutate_individual(ind)
 
 	def execution(self):
-
+		'''
+		Whole execution of the genetic algortihm 
+		
+		Returns : 
+			time : float 
+				Total execution time 
+			iteration / execution : int 
+				Total time generation 
+		'''
 		start = tm.time()
 		
-
 		total_iterations = 0 
 		ga.init_population()
 
-		while(tm.time() < self.max_time or self.get_the_best().fitness != self.optimal):
-			#Primero tenemos que seleccionar usando ruleta
+		#while (tm.time() - start < self.max_time) and (self.get_the_best().fitness != self.optimal):
+		#while tm.time() < self.max_time or self.get_the_best().fitness != self.optimal:
+		#while(tm.time() < self.max_time):
+		while(self.get_the_best().fitness != self.optimal):
+			#Roullete Selection 
 			roulette_selected = self.selection_rl() 
-			#Luego hay que realizar el crossover 
+			#Crossover  
 			roulette_offspring = self.crossover_pop(roulette_selected)
-			#Luego unimos el crossover con los mejores de elitismo
+			#Elitism Selection 
 			elite = self.selection_elitism() 
+			#Union of the Selected individuals
 			offspring = np.concatenate((roulette_offspring,elite),axis=0) 
+			#Generational Replacement 
 			self.current_pop = offspring
+			#Mutate
 			self.mutation_simple()
-			total_iterations = total_iterations+1
-			#Luego hacemos mutacion 
+			total_iterations = total_iterations+1 
 
 
-		print(self.get_the_best())
-		end = tm.time()
-		print("Tiempo total de ejecucion: "+str(end-start))
-		print("Total de iteraciones: "+str(total_iterations))
-
+		end = tm.time()		
+		return (end-start), total_iterations
 
 	def visualize_board(self,arr):
-    # Tamaño del tablero
+  		# Tamaño del tablero
 	    n = len(arr)
 
 	    # Genera una matriz de ceros de tamaño n x n para representar el tablero
@@ -264,26 +273,60 @@ class GeneticAlg:
 	    ax.tick_params(length=0)
 	    ax.grid(True)
 	    ax.set_aspect('equal')
-	    ax.set_title('Tablero de Ajedrez con Reinas', fontsize=20, fontweight='bold')
+	    ax.set_title('Tablero de Ajedrez con '+str(self.n_queens)+' Reinas', fontsize=20, fontweight='bold')
 
 	    # Muestra la figura
 	    plt.show()
 
 
+def boxplot(sample_1):
+		fig, ax = plt.subplots()
+		bp = ax.boxplot([sample_1], showfliers=False)
+		plt.show()
+
+def rep_iter(total_rep, genetic_al):
+	'''
+	Execute the algortihm "total_rep" times
+
+	Args: 
+	total_rep : int 
+		The total number of repetitions to execute the genetic 
+	genetic_al : GeneticAlg 
+		The 
+	'''
+	#Save the bests fitness 
+	data = []
+	#Save the times 
+	times = []
+	#Save the number of generations 
+	gens = [] 
+	for i in range(total_rep): 
+		tmp_time, tmp_generations = genetic_al.execution()
+		data.append(genetic_al.get_the_best().fitness)
+		times.append(tmp_time)
+		gens.append(tmp_generations)
+
+	#AVG Time
+	avg_time = sum(times)/len(times)
+	avg_genes = sum(gens)/len(gens)
+	avg_fitness = sum(data)/len(data)
+	print("AVG Tiempo : " + str(avg_time))
+	print("AVG Geeneraciones: "+str(avg_genes))
+	print(data)
+	print("AVG Fitness: "+str(avg_fitness))
+	print("Best possible fitness: "+str(genetic_al.get_the_best().max_conflics))
+
+	#boxplot(data)
 
 if __name__ == '__main__':
 
-	#Vamos a recibir el numero de reinas 
-	#Vamos a recibir el tamanio de la poblacion 
-	#Vamos a recibir la probabilidad de cruza 
-	#Vamos a recibir la probabilidad de mutacion 
-	#Vamos a recibir el maximo tiempo de ejecucion 
+	
 
 	number_q,popultation_size,prob_cross,prob_mut,time = int(sys.argv[1]),int(sys.argv[2]),float(sys.argv[3]),float(sys.argv[4]),int(sys.argv[5])
 
-	
 	ga = GeneticAlg(number_q,popultation_size,.8,prob_cross,prob_mut,time)
 	
+	#rep_iter(10,ga)
 	ga.execution()	
 	ga.visualize_board(ga.get_the_best().chromosome)
 	
