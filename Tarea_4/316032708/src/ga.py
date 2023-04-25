@@ -327,7 +327,8 @@ if __name__ == '__main__':
 	ga = GeneticAlg(number_q,popultation_size,.8,prob_cross,prob_mut,time)
 	
 	#rep_iter(10,ga)
-	ga.execution()	
+	ga.execution()
+	print(ga.get_the_best())	
 	ga.visualize_board(ga.get_the_best().chromosome)
 	
 
