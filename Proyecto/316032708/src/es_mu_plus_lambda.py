@@ -57,7 +57,9 @@ class ESMuPlusLambda:
 
 	#Hay que generar individuos de forma random 	
 	def random_pop_generator(self):
-
+		'''
+		It generate a random population based on mu individuals and based on the dimension and range of the funtion 
+		'''
 		vectors = np.array([np.array([np.random.uniform(self.func_range[0], self.func_range[1]) for i in range(self.dim)]) for j in range(self.mu)])
 		population = np.array([ind.ESIndividual(vector,self.sigma, self.function, self.func_range) for vector in vectors])
 		#return population 
@@ -65,6 +67,26 @@ class ESMuPlusLambda:
 
 	def parents_selection(self): 
 		return np.random.choice(self.current_p,size=self.rho, replace=False)
+
+	#RECOMBINATIONS 
+	def discrete_recombination(self, parents): 
+
+		#We extract the vectors from the parents 
+		vector_matrix = np.array([parent.vector for parent in parents])
+
+		#We extract the sigmas from the parents 
+		sigmas = np.array([parent.sigma for parent in parents])
+
+
+		genotype = []
+		for i in range(self.dim):
+			new_gen = np.random.choice(np.take(vector_matrix,i,axis=1), 1, replace=False)[0] 
+			genotype.append(new_gen)
+		
+		#Chose one sigma randomly 
+		new_sigma = np.random.choice(sigmas,1,replace=False)[0]
+
+		return ind.ESIndividual(np.array(genotype),new_sigma,self.function,self.func_range)
 
 
 if __name__ == '__main__':
@@ -77,3 +99,6 @@ if __name__ == '__main__':
 	print(">>>>>>>>>>>")
 	parents = algo.parents_selection()
 	algo.print_current_pop(parents)
+	print(">>>>>>>>>>>>>>")
+	child = algo.discrete_recombination(parents)
+	print(child)
