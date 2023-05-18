@@ -13,8 +13,10 @@ class ESIndividual:
 		The fitness value 
 	sigma : float 
 		mutation strenght 
+	fun : function 
+		The function to optimize 
 	func_range = (float , float)
-		the domain of the funtion 
+		The domain of the funtion 
 	//Es posible que valga la pena agregar el rango de la funcion y una funcion de la clase que repare el vector 
 
 	'''
@@ -26,21 +28,35 @@ class ESIndividual:
 		self.func_range = rg 
 		self.fitness = 0 
 
-	def evaluate(self): 
+	def __str__(self):
+		return "Vector : {}".format(str(self.vector))+"\n"+"Endogenous values : {}".format(str(self.sigma))+"\n"+"Fitness value : {}".format(str(self.fitness))
 
+	def evaluate(self): 
+		'''
+		Evaluate the solution using the function received in constructor 
+		'''
 		self.fitness = self.function(self.vector)
 		#self.fitness = fun(self.vector)
 
 	def increase_sigma(self,c):
+		'''
+		c : float 
+			The change factor received from mutations step 
+		'''
 		self.sigma = c*c*self.sigma
 
 	def decrease_sigma(self,c):
+		'''
+		c : float 
+			The change factor received from mutations step 
+		'''
 		self.sigma = self.sigma/c
 
 if __name__ == '__main__':
 
-	ind = ESIndividual([1,2,3,4], 0.5,functions.ackley,(-30,30))
+	ind = ESIndividual([1,2,3,4,5,7,-5], 0.5,functions.ackley,(-30,30))
 	print(ind.fitness)
 	ind.evaluate()
 	print(ind.fitness)
+	print(ind)
 	#print(funtions.ackley(np.array([1,2])))
