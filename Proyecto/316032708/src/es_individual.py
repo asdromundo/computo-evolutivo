@@ -38,6 +38,15 @@ class ESIndividual:
 		self.fitness = self.function(self.vector)
 		#self.fitness = fun(self.vector)
 
+	def fix_genotype(self):
+
+		'''
+		Method to fix the genotype of the individual  
+		'''
+		for gen in self.vector: 
+			if(gen < self.func_range[0]) : gen = self.func_range[0]
+			if(gen > self.func_range[1]) :gen = self.func_range[1]
+
 	def increase_sigma(self,c):
 		'''
 		c : float 
