@@ -6,9 +6,12 @@ import numpy as np
 
 def ackley(vector): 
 
-	first_sum = 20*math.exp((math.sqrt((sum([x*x for x in vector]))/2))*(-0.2))
+	n = len(vector)
+	sum_sq_term = np.sum(np.square(vector))
+	cos_term = np.sum(np.cos(2 * math.pi * vector))
+	term1 = -20.0 * math.exp(-0.2 * math.sqrt((1.0/n) * sum_sq_term))
+	term2 = -math.exp((1.0/n) * cos_term)
+	term3 = 20.0 + math.e
 
-	second_sum = math.exp((sum([math.cos(2*math.pi*x) for x in vector]))/2)
-
-	return 20 + math.e - first_sum - second_sum  
+	return term1 + term2 + term3
 

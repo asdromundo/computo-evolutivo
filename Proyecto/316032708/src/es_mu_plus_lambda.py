@@ -1,6 +1,8 @@
 import functions 
 import numpy as np
+import random as rnd 
 import es_individual as ind 
+import matplotlib.pyplot as plt
 
 class ESMuPlusLambda: 
 	'''
@@ -31,7 +33,9 @@ class ESMuPlusLambda:
 
 	'''
 
-	def __init__(self, fun, fun_rg, mu, lam, rho, m,dim,sigma):
+
+
+	def __init__(self, fun, fun_rg, mu, lam, rho, m,dim):
 		self.function = fun
 		self.func_range = fun_rg
 		self.mu = mu	
@@ -39,9 +43,10 @@ class ESMuPlusLambda:
 		self.rho = rho
 		self.m = m 
 		self.dim = dim 
-		self.sigma = sigma # REVISAR SI ESTO VA A AQUÍ 
+		self.sigma = rnd.uniform(0.1, 2.0)
 		self.iters = 0  #Iterations counter 
 		self.sucess = 0  #Succes counter
+		self.c = 0.817 #Change Factor 
 		self.current_p = [] #Current population initialized as empty
 
 	def __str__(self):
@@ -110,6 +115,25 @@ class ESMuPlusLambda:
 
 		return child 
 
+	def discrete_offspring(self):
+		offspring =[]
+		for i in range(self.lamb):
+			# Select the parents 
+			parents = self.parents_selection()
+			# Recombination 
+			offspring.append(self.discrete_recombination(parents))
+		return np.array(offspring)
+
+
+	def intermediate_offspring(self):
+		offspring =[]
+		for i in range(self.lamb):
+			# Select the parents 
+			parents = self.parents_selection()
+			# Recombination 
+			offspring.append(self.intermediate_recombination(parents))
+		return np.array(offspring)		
+
 	def mutate(self, individual):
 
 		#Generate a random number using normal distribution 
@@ -121,28 +145,109 @@ class ESMuPlusLambda:
 		new_ind.evaluate()
 
 		return new_ind  
-		
+	
 	
 	def mu_plus_lambda_selection(self, offspring):
 
-		selection_pool = self.current_p + offspring 
-
+		selection_pool = np.append(self.current_p, offspring)
+		
 		#We select the best mu individuals from the selection pool 
 		self.current_p = sorted(selection_pool, key = lambda individual : individual.fitness)[:self.mu]
 
 
-	def execute(self):
+	def get_the_best(self):
+		return sorted(self.current_p, key = lambda individual : individual.fitness)[0] 
+
+	def execute(self, max_iterations):
 		
 		#Generate the initial population (radom)
 		self.random_pop_generator()
+		
+		iterations_info = []
+		best_fitness_info = []
 
-		#  
+		#Max generations 
+		for j in range(max_iterations):
+			#Select the parents 
+			parents = self.parents_selection()
+			
+			
+			#Recombination 
+			#Discrete 
+			#offspring = self.discrete_offspring()
+			#Intermediate 
+			offspring = self.intermediate_offspring()
+
+			#Mutate 
+			for i in range(len(offspring)): 
+				ind_mut = self.mutate(offspring[i])
+
+				#If the mutated solution is better than the original 
+				if ind_mut.fitness < offspring[i].fitness:
+					offspring[i] = ind_mut  
+					offspring[i].evaluate()
+					self.sucess = self.sucess	+1 
+			#Self Adaptation Step 
+			
+			if self.iters == self.m :
+				#If we have reached the iteratiosn threshold
+				for ind in offspring:
+					if self.sucess/self.m < 1/5 :
+						ind.increase_sigma(self.c)
+					if self.sucess/self.m > 1/5 :
+						ind.decrease_sigma(self.c)
+				self.iters = 0 
+				self.sucess = 0
+
+			
+			#Mu + Lambda selection 
+			self.mu_plus_lambda_selection(offspring)
+			#print(" >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+			#self.print_current_pop(self.current_p)
+
+			self.iters = self.iters + 1 
+
+
+			iterations_info.append(j)
+			best_fitness_info.append(self.get_the_best().fitness)
+
+
+
+		return self.get_the_best(),iterations_info,best_fitness_info 
+
+
+def draw_graph_pertubations_comparations(data_1):
+
+    plt.plot(data_1[0],data_1[1])
+    #plt.plot(data_2[0],data_2[1])
+
+    #plt.title("Nombre : {} \nTamanio ejemplar : {} \nFuerza de Perturbacion : {} \nMejor Solucion por perturbacion aleatoria: {}\nMejor Solucion por perturbacion por Frecuencia: {} ".format(name,size,eta,best[0],best[1]), loc = 'left')
+    plt.xlabel("iterations")
+    plt.ylabel("Fitness")
+    #plt.legend(['Random Perturbation', 'Frecuency Perturbation'])
+    plt.show()
 
 
 
 if __name__ == '__main__':
 	
-	algo = ESMuPlusLambda(functions.ackley,(-30,30), 10, 100, 5, 100, 5, 0.5)
-	pop = algo.random_pop_generator()
+
+	# ESMuPlusLambda(# function, function_range, mu_valure, lambda_value, rho_value (size of the parents selection), m : iterations threshold, dimention of the domain)
+
+	algo = ESMuPlusLambda(functions.ackley,(-30,30), 20, 100, 5, 10,10)
+
+	
+	best, iterations, fitnesss = algo.execute(100)
+	info = [iterations,fitnesss]
+	print(best)
+	draw_graph_pertubations_comparations(info)
+	#print(algo.get_the_best())
+	#print(">>>>>>>>>>>>>>>>>>>>>>>")
+	#print(best)
+	#pop = algo.random_pop_generator()
+	#parents = algo.parents_selection()
+	#offspring = algo.intermediate_offspring()
+	#algo.print_current_pop(offspring)
+	#offspring = algo.generate_offspring(, parents)
 	#print(pop)
 	
