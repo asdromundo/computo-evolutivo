@@ -213,8 +213,41 @@ class ESMuPlusLambda:
 
 
 
-		return self.get_the_best(),iterations_info,best_fitness_info 
+		return self.get_the_best(),np.array(iterations_info),np.array(best_fitness_info) 
 
+
+	#Tenemos que realizar la ejecucion promedio 
+
+
+
+def execute_repetitve(repetitions, max_iterations): 
+
+	rep_iterations = []
+	rep_fitness = []
+	rep_best = []
+
+	for i in range(repetitions):
+		temp_best, temp_iters, temp_fit = ESMuPlusLambda(functions.ackley,(-30,30), 20, 100, 5, 10,10).execute(max_iterations)
+
+		rep_iterations.append(temp_iters)
+		rep_fitness.append(temp_fit)
+		rep_best.append(temp_best.fitness)
+
+	rep_iterations = np.array(rep_iterations)
+	rep_fitness = np.array(rep_fitness)
+	rep_best = np.array(rep_best)
+
+	section = len(rep_iterations[0])/10
+
+	avg_iters = []
+	avg_fitness = []
+
+		
+	for i in range (0,len(rep_iterations[0]),int(section)): 
+		avg_iters.append(i)
+		avg_fitness.append(sum(np.take(rep_fitness,i,axis=1))/len(rep_fitness))
+
+	return np.array(avg_iters), np.array(avg_fitness), np.array(rep_best)
 
 def draw_graph_pertubations_comparations(data_1):
 
@@ -234,13 +267,20 @@ if __name__ == '__main__':
 
 	# ESMuPlusLambda(# function, function_range, mu_valure, lambda_value, rho_value (size of the parents selection), m : iterations threshold, dimention of the domain)
 
-	algo = ESMuPlusLambda(functions.ackley,(-30,30), 20, 100, 5, 10,10)
+	#algo = ESMuPlusLambda(functions.ackley,(-30,30), 20, 100, 5, 10,10)
 
 	
-	best, iterations, fitnesss = algo.execute(100)
-	info = [iterations,fitnesss]
-	print(best)
-	draw_graph_pertubations_comparations(info)
+	#best, iterations, fitnesss = algo.execute(100)
+	#info = [iterations,fitnesss]
+	#print(best)
+	
+	avg_iterations, avg_fitness, bests_of_all = execute_repetitve(10,100)
+
+	data = (avg_iterations, avg_fitness)
+	print(bests_of_all)
+	print(avg_iterations)
+	print(avg_fitness)
+	draw_graph_pertubations_comparations(data)
 	#print(algo.get_the_best())
 	#print(">>>>>>>>>>>>>>>>>>>>>>>")
 	#print(best)
