@@ -3,7 +3,7 @@ import numpy as np
 import random as rnd 
 import es_individual as ind 
 import matplotlib.pyplot as plt
-
+import time as tm 
 class ESMuPlusLambda: 
 	'''
 	Implementation of the Evolutionary Strategy Mu + Lambda 
@@ -158,14 +158,14 @@ class ESMuPlusLambda:
 	def get_the_best(self):
 		return sorted(self.current_p, key = lambda individual : individual.fitness)[0] 
 
-	def execute(self, max_iterations):
+	def execute(self, max_iterations,recombination):
 		
 		#Generate the initial population (radom)
 		self.random_pop_generator()
 		
 		iterations_info = []
 		best_fitness_info = []
-
+		sigma_evolution = []
 		#Max generations 
 		for j in range(max_iterations):
 			#Select the parents 
@@ -174,10 +174,11 @@ class ESMuPlusLambda:
 			
 			#Recombination 
 			#Discrete 
-			#offspring = self.discrete_offspring()
+			if(recombination == 0):
+				offspring = self.discrete_offspring()
+			else :
+				offspring = self.intermediate_offspring() 
 			#Intermediate 
-			offspring = self.intermediate_offspring()
-
 			#Mutate 
 			for i in range(len(offspring)): 
 				ind_mut = self.mutate(offspring[i])
@@ -209,45 +210,54 @@ class ESMuPlusLambda:
 
 
 			iterations_info.append(j)
+			sigma_evolution.append(self.get_the_best().sigma)
 			best_fitness_info.append(self.get_the_best().fitness)
 
 
 
-		return self.get_the_best(),np.array(iterations_info),np.array(best_fitness_info) 
+		return self.get_the_best(),np.array(iterations_info),np.array(best_fitness_info), np.array(sigma_evolution) 
 
 
 	#Tenemos que realizar la ejecucion promedio 
 
+def execute_single(max_iterations, recombination): 
 
+	the_best, ind_iters, ind_fit, ind_sig =  ESMuPlusLambda(functions.ackley,(-30,30), 20, 100, 5, 10,10).execute(max_iterations,recombination)
 
-def execute_repetitve(repetitions, max_iterations): 
+	return the_best, ind_iters, ind_fit, ind_sig
+
+def execute_repetitve(repetitions, max_iterations, recombination): 
 
 	rep_iterations = []
 	rep_fitness = []
 	rep_best = []
+	rep_sigmas = []
 
 	for i in range(repetitions):
-		temp_best, temp_iters, temp_fit = ESMuPlusLambda(functions.ackley,(-30,30), 20, 100, 5, 10,10).execute(max_iterations)
+		temp_best, temp_iters, temp_fit, sigmas = ESMuPlusLambda(functions.ackley,(-30,30), 20, 100, 5, 10,10).execute(max_iterations,recombination)
 
 		rep_iterations.append(temp_iters)
 		rep_fitness.append(temp_fit)
 		rep_best.append(temp_best.fitness)
+		rep_sigmas.append(sigmas)
 
 	rep_iterations = np.array(rep_iterations)
 	rep_fitness = np.array(rep_fitness)
 	rep_best = np.array(rep_best)
+	rep_sigmas = np.array(rep_sigmas)
 
 	section = len(rep_iterations[0])/10
 
 	avg_iters = []
 	avg_fitness = []
-
+	avg_sigmas = []
 		
 	for i in range (0,len(rep_iterations[0]),int(section)): 
 		avg_iters.append(i)
 		avg_fitness.append(sum(np.take(rep_fitness,i,axis=1))/len(rep_fitness))
+		avg_sigmas.append(sum(np.take(rep_sigmas,i,axis=1))/len(rep_sigmas))
 
-	return np.array(avg_iters), np.array(avg_fitness), np.array(rep_best)
+	return np.array(avg_iters), np.array(avg_fitness), np.array(rep_best), np.array(avg_sigmas)
 
 def draw_graph_pertubations_comparations(data_1):
 
@@ -274,7 +284,7 @@ if __name__ == '__main__':
 	#info = [iterations,fitnesss]
 	#print(best)
 	
-	avg_iterations, avg_fitness, bests_of_all = execute_repetitve(10,100)
+	avg_iterations, avg_fitness, bests_of_all, sigmas = execute_repetitve(10,100)
 
 	data = (avg_iterations, avg_fitness)
 	print(bests_of_all)
