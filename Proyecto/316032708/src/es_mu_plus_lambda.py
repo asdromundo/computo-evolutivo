@@ -160,6 +160,7 @@ class ESMuPlusLambda:
 
 	def execute(self, max_iterations,recombination):
 		
+		start = tm.time()
 		#Generate the initial population (radom)
 		self.random_pop_generator()
 		
@@ -213,18 +214,19 @@ class ESMuPlusLambda:
 			sigma_evolution.append(self.get_the_best().sigma)
 			best_fitness_info.append(self.get_the_best().fitness)
 
+		end = tm.time()
+		total_time = end-start
 
-
-		return self.get_the_best(),np.array(iterations_info),np.array(best_fitness_info), np.array(sigma_evolution) 
+		return self.get_the_best(),np.array(iterations_info),np.array(best_fitness_info), np.array(sigma_evolution), total_time 
 
 
 	#Tenemos que realizar la ejecucion promedio 
 
 def execute_single(max_iterations, recombination): 
 
-	the_best, ind_iters, ind_fit, ind_sig =  ESMuPlusLambda(functions.ackley,(-30,30), 20, 100, 5, 10,10).execute(max_iterations,recombination)
+	the_best, ind_iters, ind_fit, ind_sig, time =  ESMuPlusLambda(functions.ackley,(-30,30), 20, 100, 10, 10,2).execute(max_iterations,recombination)
 
-	return the_best, ind_iters, ind_fit, ind_sig
+	return the_best, ind_iters, ind_fit, ind_sig, time
 
 def execute_repetitve(repetitions, max_iterations, recombination): 
 
@@ -232,14 +234,16 @@ def execute_repetitve(repetitions, max_iterations, recombination):
 	rep_fitness = []
 	rep_best = []
 	rep_sigmas = []
+	times = []
 
 	for i in range(repetitions):
-		temp_best, temp_iters, temp_fit, sigmas = ESMuPlusLambda(functions.ackley,(-30,30), 20, 100, 5, 10,10).execute(max_iterations,recombination)
+		temp_best, temp_iters, temp_fit, sigmas, t = ESMuPlusLambda(functions.ackley,(-30,30), 20, 100, 10, 10,2).execute(max_iterations,recombination)
 
 		rep_iterations.append(temp_iters)
 		rep_fitness.append(temp_fit)
 		rep_best.append(temp_best.fitness)
 		rep_sigmas.append(sigmas)
+		times.append(t)
 
 	rep_iterations = np.array(rep_iterations)
 	rep_fitness = np.array(rep_fitness)
@@ -257,19 +261,7 @@ def execute_repetitve(repetitions, max_iterations, recombination):
 		avg_fitness.append(sum(np.take(rep_fitness,i,axis=1))/len(rep_fitness))
 		avg_sigmas.append(sum(np.take(rep_sigmas,i,axis=1))/len(rep_sigmas))
 
-	return np.array(avg_iters), np.array(avg_fitness), np.array(rep_best), np.array(avg_sigmas)
-
-def draw_graph_pertubations_comparations(data_1):
-
-    plt.plot(data_1[0],data_1[1])
-    #plt.plot(data_2[0],data_2[1])
-
-    #plt.title("Nombre : {} \nTamanio ejemplar : {} \nFuerza de Perturbacion : {} \nMejor Solucion por perturbacion aleatoria: {}\nMejor Solucion por perturbacion por Frecuencia: {} ".format(name,size,eta,best[0],best[1]), loc = 'left')
-    plt.xlabel("iterations")
-    plt.ylabel("Fitness")
-    #plt.legend(['Random Perturbation', 'Frecuency Perturbation'])
-    plt.show()
-
+	return np.array(avg_iters), np.array(avg_fitness), np.array(rep_best), np.array(avg_sigmas), sum(times)/repetitions
 
 
 if __name__ == '__main__':
