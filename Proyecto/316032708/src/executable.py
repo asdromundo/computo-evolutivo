@@ -93,8 +93,6 @@ def execute_for_avg():
     print("Intermediate : {}".format(time_i))
 
     times = (time_d, time_i)
-    #iterations = iterations.tolist()    
-    #w.writer("output", "ackley__2.txt", data)
 
     data_1= (iterations_d,avg_fitness_d,avg_sigmas_d)
     data_2 = (iterations_i, avg_fitness_i,avg_sigmas_i)
@@ -112,16 +110,7 @@ def execute_for_ind():
 if __name__ == '__main__':
 
     execute_for_ind()
-
-
+    
     #execute_for_avg()
 
     
-
-    #w.writer("output", "ackley__2.txt", [iterations.tolist(),avg_fitness.tolist(),all_bests.tolist(),avg_sigmas.tolist()])
-
-    #data = w.reader("output", "ackley__2.txt")
-    #print(len(data))
-    #print(data[0])
-    #print(data[1])
-    #print(len(data))

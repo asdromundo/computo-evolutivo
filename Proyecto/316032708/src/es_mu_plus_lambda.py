@@ -57,6 +57,12 @@ class ESMuPlusLambda:
 			print(ind)
 
 	def evaluate_pop(self, population):
+		'''
+		Evaluates all individuals of the given population 
+
+		Arguments : 
+			population : list : ESIndividual
+		'''
 		for ind in population:
 			ind.evaluate()
 
@@ -71,11 +77,26 @@ class ESMuPlusLambda:
 		self.current_p = population 
 
 	def parents_selection(self): 
+		'''
+		Randomly selects rho- parents to generate one individual from the current population 
+
+		Returns: 
+			parents : list : ESIndividual
+		'''
 		return np.random.choice(self.current_p,size=self.rho, replace=False)
 
 	#RECOMBINATIONS 
 	def discrete_recombination(self, parents): 
+		'''
+		Implementation of Discrete Recombination
 
+		Arguments : 
+			parents involved in recombination 
+
+		Returns : 
+			child : ESIndividual
+				Individual generated 
+		'''
 		#We extract the vectors from the parents 
 		vector_matrix = np.array([parent.vector for parent in parents])
 
@@ -97,7 +118,16 @@ class ESMuPlusLambda:
 		return child
 
 	def  intermediate_recombination(self,parents):
+		'''
+		Implementation of Intermediate Recombination
 
+		Arguments : 
+			parents involved in recombination 
+
+		Returns : 
+			child : ESIndividual
+				Individual generated 
+		'''
 		#We extract the vectors from the parents 
 		vector_matrix = np.array([parent.vector for parent in parents])
 
@@ -135,7 +165,9 @@ class ESMuPlusLambda:
 		return np.array(offspring)		
 
 	def mutate(self, individual):
-
+		'''
+		Mutation of a invidual 
+		'''
 		#Generate a random number using normal distribution 
 		r = np.random.normal(0,individual.sigma*individual.sigma,len(individual.vector))
 		new_ind = ind.ESIndividual(individual.vector+r,individual.sigma,self.function,self.func_range) 
@@ -148,7 +180,9 @@ class ESMuPlusLambda:
 	
 	
 	def mu_plus_lambda_selection(self, offspring):
-
+		'''
+		Impletation of mu+lambda selecion 
+		'''
 		selection_pool = np.append(self.current_p, offspring)
 		
 		#We select the best mu individuals from the selection pool 
@@ -159,7 +193,16 @@ class ESMuPlusLambda:
 		return sorted(self.current_p, key = lambda individual : individual.fitness)[0] 
 
 	def execute(self, max_iterations,recombination):
-		
+		'''
+		Main algorithm execution 
+
+		Arguments: 
+			max_iterations : int
+				Halt condition  
+			recombination : int
+				Type of recombination operator  
+		'''
+
 		start = tm.time()
 		#Generate the initial population (radom)
 		self.random_pop_generator()
@@ -224,12 +267,36 @@ class ESMuPlusLambda:
 
 def execute_single(max_iterations, recombination): 
 
+	'''
+	Ejecucion individual especificando el operador de recombinacion 
+
+	Arguments : 
+		max_iterations : int 
+		recombination : int 
+	
+	Returns : 
+
+		array with individual information about single ejecucion 
+
+	'''
+
 	the_best, ind_iters, ind_fit, ind_sig, time =  ESMuPlusLambda(functions.ackley,(-30,30), 20, 100, 10, 10,2).execute(max_iterations,recombination)
 
 	return the_best, ind_iters, ind_fit, ind_sig, time
 
 def execute_repetitve(repetitions, max_iterations, recombination): 
 
+	'''
+	Repeticiones de las ejecuciones individuales para obtener los resultados de la evolucion promedio. 
+
+	Arguments: 
+		repetitions : int 
+		max_iterations : int 
+		recombination : int 
+
+	Returns : 
+		array with avg info 
+	'''
 	rep_iterations = []
 	rep_fitness = []
 	rep_best = []
@@ -263,33 +330,4 @@ def execute_repetitve(repetitions, max_iterations, recombination):
 
 	return np.array(avg_iters), np.array(avg_fitness), np.array(rep_best), np.array(avg_sigmas), sum(times)/repetitions
 
-
-if __name__ == '__main__':
-	
-
-	# ESMuPlusLambda(# function, function_range, mu_valure, lambda_value, rho_value (size of the parents selection), m : iterations threshold, dimention of the domain)
-
-	#algo = ESMuPlusLambda(functions.ackley,(-30,30), 20, 100, 5, 10,10)
-
-	
-	#best, iterations, fitnesss = algo.execute(100)
-	#info = [iterations,fitnesss]
-	#print(best)
-	
-	avg_iterations, avg_fitness, bests_of_all, sigmas = execute_repetitve(10,100)
-
-	data = (avg_iterations, avg_fitness)
-	print(bests_of_all)
-	print(avg_iterations)
-	print(avg_fitness)
-	draw_graph_pertubations_comparations(data)
-	#print(algo.get_the_best())
-	#print(">>>>>>>>>>>>>>>>>>>>>>>")
-	#print(best)
-	#pop = algo.random_pop_generator()
-	#parents = algo.parents_selection()
-	#offspring = algo.intermediate_offspring()
-	#algo.print_current_pop(offspring)
-	#offspring = algo.generate_offspring(, parents)
-	#print(pop)
 	
