@@ -310,7 +310,7 @@ def rep_iter(total_rep, genetic_al):
 	avg_time = sum(times)/len(times)
 	avg_genes = sum(gens)/len(gens)
 	avg_fitness = sum(data)/len(data)
-	print("AVG Tiempo : " + str(avg_time))
+	#print("AVG Tiempo : " + str(avg_time))
 	print("AVG Geeneraciones: "+str(avg_genes))
 	print(data)
 	print("AVG Fitness: "+str(avg_fitness))
